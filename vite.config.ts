@@ -6,6 +6,10 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 // localhost/127.0.0.1, never for a bare IP address. See CLAUDE.md's
 // "How to test" section.
 export default defineConfig({
+  // GitHub Pages serves this project at /collateral/, not the domain root.
+  // CI (set by GitHub Actions) is the only environment that needs that
+  // prefix; local dev and preview keep using '/'.
+  base: process.env.CI ? '/collateral/' : '/',
   plugins: [basicSsl()],
   server: {
     https: true,
