@@ -1,6 +1,6 @@
 import type { Player } from '../types';
 
-export const C4 = { w: 7, h: 6 };
+export const C4 = { w: 6, h: 5 };
 
 export let cells: (Player | null)[][];
 export let winLine: [number, number][] = [];

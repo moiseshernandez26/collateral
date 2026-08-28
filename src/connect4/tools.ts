@@ -22,7 +22,7 @@ export const C4_TOOLS: ToolDef[] = [
   },
   {
     name: 'c4_drop',
-    description: 'Drops your piece in a column, 0 to 6. It falls to the lowest free slot and passes the turn unless you win.',
+    description: 'Drops your piece in a column, 0 to 5. It falls to the lowest free slot and passes the turn unless you win.',
     inputSchema: { type: 'object', properties: { column: { type: 'integer' } }, required: ['column'] },
     run: guard((args) => {
       const { result, drop: at } = drop(args.column as number, 'agent');

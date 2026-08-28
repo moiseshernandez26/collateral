@@ -60,7 +60,7 @@ export function paint(extra?: string[] | { drop?: [number, number] }): void {
       R.innerHTML = `<b>${Math.max(0, MS.mines - flags.size)}</b> mines left to mark`;
     }
   } else if (S.duel) {
-    L.innerHTML = 'you in red · agent in black';
+    L.innerHTML = '<b class="tag h">you in red</b> · <b class="tag a">agent in black</b>';
     R.textContent = 'four in a row wins';
   } else {
     L.textContent = c4Msg || '';

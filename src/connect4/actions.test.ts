@@ -27,9 +27,9 @@ function findWinningColumn(): number {
 describe('drop', () => {
   it('stacks pieces from the bottom of a column', () => {
     const r1 = drop(3, 'human').result as { ok: boolean; row: number; column: number };
-    expect(r1).toMatchObject({ ok: true, row: 5, column: 3 });
+    expect(r1).toMatchObject({ ok: true, row: C4.h - 1, column: 3 });
     const r2 = drop(3, 'agent').result as { row: number };
-    expect(r2.row).toBe(4);
+    expect(r2.row).toBe(C4.h - 2);
   });
 
   it('detects a vertical four-in-a-row', () => {
@@ -58,8 +58,8 @@ describe('drop', () => {
     expect(drop(2, 'human').result).toEqual({ ok: false, reason: 'that column is full' });
   });
 
-  it('rejects a column outside 0-6', () => {
-    expect(drop(7, 'human').result).toEqual({ ok: false, reason: 'column out of range, 0 to 6' });
+  it('rejects a column outside the board', () => {
+    expect(drop(C4.w, 'human').result).toEqual({ ok: false, reason: 'column out of range, 0 to 5' });
   });
 
   it('rejects any move once the round is over', () => {

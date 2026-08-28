@@ -123,10 +123,10 @@ game has an opponent.
 
 ### Criteria
 
-1. THE SYSTEM SHALL use a 7-column by 6-row board.
+1. THE SYSTEM SHALL use a 6-column by 5-row board.
 2. WHEN a player drops a piece THE SYSTEM SHALL place it in that column's lowest
    free row.
-3. IF the column is full or outside the 0–6 range THEN THE SYSTEM SHALL reject the
+3. IF the column is full or outside the 0–5 range THEN THE SYSTEM SHALL reject the
    move and explain why.
 4. WHEN a move forms four in a row horizontally, vertically, or diagonally THE
    SYSTEM SHALL end the round, highlight the line, and award the round to that

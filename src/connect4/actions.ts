@@ -5,7 +5,7 @@ import { C4, cells, blank, freeRow, checkLine, anyLine, setWinLine, setMsg } fro
 export function drop(col: number, who: Player): { result: ToolResult; drop?: [number, number] } {
   if (S.over) return { result: { ok: false, reason: 'the round is already over' } };
   if (!Number.isInteger(col) || col < 0 || col >= C4.w)
-    return { result: { ok: false, reason: 'column out of range, 0 to 6' } };
+    return { result: { ok: false, reason: 'column out of range, 0 to 5' } };
   const row = freeRow(col);
   if (row === -1) return { result: { ok: false, reason: 'that column is full' } };
   cells[row][col] = who;
@@ -118,11 +118,11 @@ export function generatePuzzle(): void {
     return;
   }
   blank();
-  cells[5][1] = 'human';
-  cells[5][2] = 'human';
-  cells[5][3] = 'human';
-  cells[5][5] = 'agent';
-  cells[5][6] = 'agent';
+  const bottom = C4.h - 1;
+  cells[bottom][0] = 'human';
+  cells[bottom][1] = 'human';
+  cells[bottom][2] = 'human';
+  cells[bottom][C4.w - 1] = 'agent';
   setMsg('Find the column that makes four in a row.');
 }
 

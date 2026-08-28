@@ -7,6 +7,7 @@ const c4Grid = document.getElementById('c4Grid')!;
 
 export function buildGrid(): void {
   c4Grid.innerHTML = '';
+  c4Grid.style.gridTemplateColumns = `repeat(${C4.w}, 1fr)`;
   for (let y = 0; y < C4.h; y++)
     for (let x = 0; x < C4.w; x++) {
       const b = document.createElement('button');

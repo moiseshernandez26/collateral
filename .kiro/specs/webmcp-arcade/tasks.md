@@ -26,7 +26,7 @@ What's checked off is already in the working prototype.
 
 ## Phase 3 — Connect 4 engine
 
-- [x] 3.1 7×6 board with gravity drop — _R7.1, R7.2_
+- [x] 3.1 6×5 board with gravity drop — _R7.1, R7.2_
 - [x] 3.2 Four-in-a-row detection in all four directions — _R7.4_
 - [x] 3.3 Tie on a full board — _R7.5_
 - [x] 3.4 Verified puzzle generator, with fallback — _R8.1 to R8.8_

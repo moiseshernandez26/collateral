@@ -176,7 +176,7 @@ Up to 800 attempts, with a fixed fallback position. Verification uses the same
 
 An idempotent `paint()` redraws everything from state. No one mutates the DOM on
 their own. It's more work per frame than strictly necessary, and that's fine:
-the boards are 81 and 42 cells.
+the boards are 81 and 30 cells.
 
 Cell contrast, which already failed once: closed is dark sage green with an
 `inset box-shadow` simulating relief; open is nearly white and flat. The
