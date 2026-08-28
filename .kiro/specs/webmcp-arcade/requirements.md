@@ -86,7 +86,7 @@ game has an opponent.
 
 ### Criteria
 
-1. THE SYSTEM SHALL generate a 9×9 board with 10 mines.
+1. THE SYSTEM SHALL generate a 9×9 board with 13 mines.
 2. WHEN the first cell of the round is opened THE SYSTEM SHALL place the mines
    excluding that cell and its eight neighbors.
 3. WHEN a player opens a mine-free cell THE SYSTEM SHALL reveal it, cascade the
@@ -101,7 +101,7 @@ game has an opponent.
    SHALL reject the move.
 8. IF opening or claiming an already-open or already-claimed cell is attempted
    THEN THE SYSTEM SHALL reject the move.
-9. WHEN all 10 mines are claimed or stepped on THE SYSTEM SHALL end the round and
+9. WHEN all 13 mines are claimed or stepped on THE SYSTEM SHALL end the round and
    award it to whoever has more round points.
 10. THE SYSTEM SHALL track round points and rounds won in separate counters.
 

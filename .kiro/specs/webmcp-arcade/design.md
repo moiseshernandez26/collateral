@@ -161,9 +161,13 @@ Needed because Connect 4 has no single-player version. Algorithm:
 2. Pick which of the four is the target cell; place the player's pieces on the
    other three.
 3. Fill everything below each occupied cell by gravity, with random colors.
-4. Verify: the target column's lowest free cell is exactly the target, nothing
+4. **Chaff:** stack 1-4 random extra pieces in every column other than the
+   target, so the winning line isn't the only thing on the board and no
+   column stays empty enough to be ruled out on sight.
+5. Verify: the target column's lowest free cell is exactly the target, nothing
    sits above it, and the board doesn't already contain four in a row.
-5. Simulate the shot. If it wins, the position is used; if not, retry.
+6. Simulate the shot. If it wins, the position is used; if any other column
+   also wins, the chaff created a second solution — retry instead.
 
 Up to 800 attempts, with a fixed fallback position. Verification uses the same
 `checkLine` the game itself uses: if the puzzle passes, the engine agrees.

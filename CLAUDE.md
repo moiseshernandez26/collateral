@@ -59,6 +59,10 @@ The entire design exists so these three moments work. Don't break them.
 - **No WebMCP, single player.** Not a local bot opponent, not playing both sides:
   a real single-player mode, and the interface doesn't mention an opponent
   anywhere.
+- **WebMCP being available doesn't mean an agent is attached.** The API
+  existing only proves the browser can register tools, not that anything is
+  listening. Ask the human ("play vs agent" or "play solo") before assuming
+  duel mode — don't go back to auto-entering duel mode on detection alone.
 
 ## How tools are designed here
 
@@ -103,9 +107,13 @@ Three rules earned the hard way:
 
 ## Code architecture
 
-`src/main.ts` is the only entry point: it imports `style.css`, decides whether
-WebMCP is available (`document.modelContext`), and kicks off
-`startGame('ms', false)` from `controller.ts` in duel or solo mode.
+`src/main.ts` is the only entry point: it imports `style.css` and checks
+whether WebMCP is available (`document.modelContext`). If it isn't, it goes
+straight to solo mode. If it is, availability alone doesn't mean an agent is
+attached to call the tools (no agent app running, no MCP inspector
+connected), so it shows a modal (`#picker` in `index.html`) asking the human
+to pick duel or solo before registering anything. Either path ends by calling
+`startGame('ms', false)` from `controller.ts`.
 
 `state.ts` holds the single shared state (`S`): active game, whether it's a
 duel, turn, scoreboard. Any module imports it and mutates it directly.
