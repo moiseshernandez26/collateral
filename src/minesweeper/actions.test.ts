@@ -29,7 +29,7 @@ beforeEach(() => {
   S.turn = 'agent';
   S.round = { human: 0, agent: 0 };
   S.series = { human: 0, agent: 0 };
-  S.solo = { msWins: 0, c4Solved: 0 };
+  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0 };
 });
 
 describe('reveal', () => {
@@ -38,6 +38,18 @@ describe('reveal', () => {
     expect(r.result.ok).toBe(true);
     expect((r.result as { result: string }).result).toBe('safe');
     expect(mines.size).toBe(MS.mines);
+  });
+
+  // design.md's manual checklist: "First cell: twenty new games, none lost on the first click."
+  it('never loses on the first click, across twenty new boards', () => {
+    for (let i = 0; i < 20; i++) {
+      newBoard();
+      const x = Math.floor(Math.random() * MS.w);
+      const y = Math.floor(Math.random() * MS.h);
+      const r = reveal(x, y, 'human').result as { ok: boolean; result: string };
+      expect(r.ok).toBe(true);
+      expect(r.result).toBe('safe');
+    }
   });
 
   it('awards the point to the opponent when a mine is opened', () => {

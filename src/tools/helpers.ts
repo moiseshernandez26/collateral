@@ -20,7 +20,7 @@ export function toolDef(t: ToolDef): ModelContextTool {
     inputSchema: t.inputSchema,
     annotations: t.annotations || {},
     execute: async (args = {}) => {
-      const out = t.run(args);
+      const out = await t.run(args);
       logCall(t.name, args, out);
       return wrapText(out);
     },

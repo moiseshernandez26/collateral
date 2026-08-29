@@ -27,6 +27,7 @@ export const CORE: ToolDef[] = [
     run: () => [
       { id: 'ms', name: 'Minesweeper duel', active: S.game === 'ms' },
       { id: 'c4', name: 'Connect 4', active: S.game === 'c4' },
+      { id: 'pong', name: 'Pong (real-time)', active: S.game === 'pong' },
     ],
   },
   {
@@ -35,12 +36,18 @@ export const CORE: ToolDef[] = [
       "Switches minigame and starts a new round. On switching, the previous game's tools are unregistered and the new game's tools appear.",
     inputSchema: {
       type: 'object',
-      properties: { game_id: { type: 'string', enum: ['ms', 'c4'] } },
+      properties: {
+        game_id: {
+          type: 'string',
+          enum: ['ms', 'c4', 'pong'],
+          description: "'ms' for minesweeper duel, 'c4' for Connect 4, 'pong' for real-time Pong",
+        },
+      },
       required: ['game_id'],
     },
-    run: (args) => {
+    run: async (args) => {
       const gameId = args.game_id as GameId;
-      startGame(gameId, true);
+      await startGame(gameId, true);
       return { ok: true, game: gameId };
     },
   },
@@ -48,8 +55,8 @@ export const CORE: ToolDef[] = [
     name: 'new_round',
     description: 'Starts a new round of the active game without clearing the rounds won.',
     inputSchema: { type: 'object', properties: {} },
-    run: () => {
-      startGame(S.game, true);
+    run: async () => {
+      await startGame(S.game, true);
       return { ok: true, game: S.game };
     },
   },

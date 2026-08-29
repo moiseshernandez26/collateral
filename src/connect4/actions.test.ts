@@ -8,7 +8,7 @@ beforeEach(() => {
   S.over = false;
   S.verdict = '';
   S.series = { human: 0, agent: 0 };
-  S.solo = { msWins: 0, c4Solved: 0 };
+  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0 };
   S.turn = 'human';
 });
 
@@ -78,6 +78,15 @@ describe('generatePuzzle', () => {
     generatePuzzle();
     expect(anyLine()).toBe(false);
     expect(findWinningColumn()).toBeGreaterThanOrEqual(0);
+  });
+
+  // design.md's manual checklist: "Puzzles: fifteen 'skip puzzle' in a row, all solvable."
+  it('stays solvable across fifteen consecutive skips', () => {
+    for (let i = 0; i < 15; i++) {
+      generatePuzzle();
+      expect(anyLine()).toBe(false);
+      expect(findWinningColumn()).toBeGreaterThanOrEqual(0);
+    }
   });
 });
 

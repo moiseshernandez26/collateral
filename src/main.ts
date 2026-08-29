@@ -37,23 +37,25 @@ function playSolo(): void {
 // duel mode.
 function askHowToPlay(mc: ModelContext): void {
   const picker = document.getElementById('picker')!;
+  const bar = document.querySelector('.bar')!;
+  const wrap = document.querySelector('.wrap')!;
   picker.style.display = 'flex';
-  document.getElementById('pickAgent')!.addEventListener(
-    'click',
-    () => {
-      picker.style.display = 'none';
-      playVsAgent(mc);
-    },
-    { once: true },
-  );
-  document.getElementById('pickSolo')!.addEventListener(
-    'click',
-    () => {
-      picker.style.display = 'none';
-      playSolo();
-    },
-    { once: true },
-  );
+  // trap keyboard focus in the modal: the rest of the page isn't playable yet
+  bar.setAttribute('inert', '');
+  wrap.setAttribute('inert', '');
+  document.getElementById('pickAgent')!.focus();
+
+  function choose(fn: () => void): void {
+    picker.style.display = 'none';
+    bar.removeAttribute('inert');
+    wrap.removeAttribute('inert');
+    fn();
+    document.getElementById('tabMs')!.focus();
+  }
+  document.getElementById('pickAgent')!.addEventListener('click', () => choose(() => playVsAgent(mc)), {
+    once: true,
+  });
+  document.getElementById('pickSolo')!.addEventListener('click', () => choose(playSolo), { once: true });
 }
 
 function boot(): void {

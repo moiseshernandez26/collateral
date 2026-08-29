@@ -4,9 +4,10 @@ Guide for any agent working in this repo. Read it in full before touching code.
 
 ## What this is
 
-A turn-based minigame arcade in the browser where the opponent is an **external
-agent** playing by calling WebMCP tools. Two games: a minesweeper duel and
-Connect 4.
+A minigame arcade in the browser where the opponent is an **external agent**
+playing by calling WebMCP tools. Three games: a minesweeper duel, Connect 4,
+and Pong. The first two are turn-based; Pong is real-time and exists to show
+that WebMCP isn't limited to games that wait politely for the agent.
 
 ## The real goal
 
@@ -118,41 +119,56 @@ to pick duel or solo before registering anything. Either path ends by calling
 `state.ts` holds the single shared state (`S`): active game, whether it's a
 duel, turn, scoreboard. Any module imports it and mutates it directly.
 
-Each game lives in its own folder (`minesweeper/`, `connect4/`), split the same
-way:
+Each game lives in its own folder (`minesweeper/`, `connect4/`, `pong/`), split
+the same way:
 - `state.ts` — mutable board data and mode toggles (flags, claiming).
 - `actions.ts` — moves that mutate state; return both the tool-shaped result
   (`{ ok, reason, ... }`) and whatever render needs (opened cells, the dropped
   cell) to animate.
-- `query.ts` — the read-only tools (`ms_frontier`, `c4_analysis`, the `_board`s).
+- `query.ts` — the read-only tools (`ms_frontier`, `c4_analysis`, Pong's
+  `intercept_y`, the `_board`s).
 - `render.ts` — builds the grid and repaints it; clicks call into `actions.ts`
   and then into `controller.ts`'s `paint()`.
 - `tools.ts` — assembles the game's `ToolDef`s using `guard()` from
   `tools/helpers.ts`.
 
+**Pong bends two of those rules on purpose**, and neither should be "tidied up":
+it renders to a canvas on its own wall-clock loop instead of being repainted by
+`paint()`, and its tools skip `guard()` because a real-time game has no turns to
+be out of. `pong_read` is also deliberately a *blocking* tool — it parks until
+the ball comes at the agent. Read design.md's "Pong and the agent loop" before
+changing anything in `pong/`; every constant in `PONG` is load-bearing and at
+least three of them were bugs first.
+
 `tools/helpers.ts` has `toolDef`, `wrapText`, `guard`, and `NOT_TURN`.
 `tools/registry.ts` builds the per-game tool map and runs the
 `AbortController` that unregisters the previous game's tools on switch (the
 third demo moment). `tools/core.ts` is the 4 tools that don't depend on the
-active game (`get_match`, `list_games`, `switch_game`, `new_round`).
+active game (`get_match`, `list_games`, `switch_game`, `new_round`) — their
+`run` must stay `async` and `await startGame(...)` (see design.md's Lifecycle
+section for why: an un-awaited one lets a second switch race the first).
 
 Unit tests (Vitest, jsdom environment) live next to the code they cover as
 `*.test.ts`, and only exist for the `state.ts`/`actions.ts`/`query.ts` engine
-layer of each game plus `tools/helpers.ts` and the root `state.ts` — the parts
-that are pure logic with no DOM. `render.ts`, `tools.ts`, `controller.ts`, and
-`main.ts` are DOM glue and aren't unit-tested; the manual checklist in
-`design.md` still covers those. Engine tests reset `newBoard()`/`blank()` and
-the relevant `S` fields in a `beforeEach` — the board and `S` are
-module-level singletons, not recreated per test.
+layer of each game plus `metrics.ts`, `tools/helpers.ts`, and the root
+`state.ts` — the parts that are pure logic with no DOM. `render.ts`,
+`tools.ts`, `controller.ts`, `acts.ts`, `log.ts`, and `main.ts` are DOM glue
+and aren't unit-tested; the manual checklist in `design.md` still covers
+those. Engine tests reset `newBoard()`/`blank()` and the relevant `S` fields
+in a `beforeEach` — the board and `S` are module-level singletons, not
+recreated per test. Pong's engine is testable for the same reason: `step(dt)`
+takes the elapsed time as an argument instead of reading a clock, so a test
+drives it in slices exactly the way the render loop does.
 
 `controller.ts` is the orchestrator: `paint()` (repaints scoreboard, turn, acts)
-and `startGame()` (starts/resets a game, registers its tools). **This is a
-deliberate import cycle**: `minesweeper/render.ts`, `connect4/render.ts`,
-`minesweeper/tools.ts`, `connect4/tools.ts`, and `tools/core.ts` all import
-`paint` or `startGame` back from `controller.ts`. It works because `paint` and
-`startGame` are `function` declarations (hoisted), never arrow functions
-assigned to `const` — don't convert them, that would break the cycle with a
-`ReferenceError` at load time.
+and `startGame()` (starts/resets a game, registers its tools). `acts.ts` holds
+the per-game action buttons, split out to keep both files under the ~200-line
+guideline. **This is a deliberate import cycle**: every game's `render.ts` and
+`tools.ts`, plus `tools/core.ts` and `acts.ts`, import `paint` or `startGame`
+back from `controller.ts`. It works because `paint` and `startGame` are
+`function` declarations (hoisted), never arrow functions assigned to `const` —
+don't convert them, that would break the cycle with a `ReferenceError` at load
+time.
 
 ## Workflow
 

@@ -169,6 +169,55 @@ plays poorly discredits the technology instead of showcasing it.
 3. THE SYSTEM SHALL compute these aids in deterministic JavaScript, without
    consulting any model.
 4. THE SYSTEM SHALL describe in each tool's text how to interpret its output.
+5. THE SYSTEM SHALL expose a tool that returns, for Pong, the y coordinate at which
+   the ball will reach the agent's paddle, with wall bounces already resolved.
+
+## Requirement 13 — Session metrics
+
+**Story:** As the presenter, I want a running tally of how the agent is playing, so
+I can talk about quality during the demo.
+
+### Criteria
+
+1. THE SYSTEM SHALL count, per round and per match, how many agent tool calls were
+   made, how many were rejected (`ok:false`), and how many succeeded but cost the
+   agent the point or the cell (a wrong claim or an opened mine).
+2. THE SYSTEM SHALL reset the per-round count on every new round and the per-match
+   counts on every fresh match.
+3. THE SYSTEM SHALL show the same call total in the rail header and in the metrics
+   line, so the two can never disagree.
+
+## Requirement 14 — Pong
+
+**Story:** As the presenter, I want one minigame that is not turn-based, so the room
+sees that WebMCP is not limited to games that politely wait for the agent.
+
+### Criteria
+
+1. THE SYSTEM SHALL simulate the ball continuously from wall-clock time, and SHALL
+   keep simulating while the tab is hidden, since the agent driving it may be in
+   another window.
+2. THE SYSTEM SHALL prevent the ball from passing through a paddle at any frame
+   rate, by advancing the simulation in steps no larger than the ball's radius.
+3. WHEN the agent calls the read tool THE SYSTEM SHALL NOT answer until the ball is
+   travelling toward the agent's paddle, and SHALL then return the interception
+   point.
+4. WHILE a read has been answered and the agent has not yet moved THE SYSTEM SHALL
+   slow the ball, so that one agent round-trip fits inside a rally.
+5. THE SYSTEM SHALL hand any one approach to the agent at most once, so that a
+   read/move loop cannot spin against a single shot.
+6. IF the agent never moves after being handed an approach THEN THE SYSTEM SHALL
+   return to full speed after a bounded wait rather than staying slowed forever.
+7. IF nothing comes at the agent within a bounded wait THEN THE SYSTEM SHALL answer
+   the read with a timeout event rather than leaving the call hanging.
+8. WHEN the round ends or the game is switched away THE SYSTEM SHALL settle any
+   read still waiting.
+9. THE SYSTEM SHALL reject a paddle move made in single player or after the round is
+   over, and SHALL clamp an out-of-range coordinate instead of rejecting it.
+10. WHILE in single player THE SYSTEM SHALL bounce the ball off the agent's edge as
+    a wall and end the run when the player misses, recording the best run.
+11. THE SYSTEM SHALL let the player move the paddle with the pointer and with the
+    arrow keys.
 
 ## Requirement 10 — Call rail
 

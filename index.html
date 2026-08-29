@@ -39,11 +39,14 @@
     <div class="tabs">
       <button id="tabMs" class="on">Minesweeper</button>
       <button id="tabC4">Connect 4</button>
+      <button id="tabPong">Pong</button>
     </div>
     <div id="turn" class="turn h"><span class="who"></span><span class="hint" id="turnHint"></span></div>
     <div class="roundline"><span id="rlLeft"></span><span id="rlRight"></span></div>
     <div id="msGrid"></div>
     <div id="c4Grid" style="display:none"></div>
+    <canvas id="pongCanvas" width="480" height="300" style="display:none"
+            tabindex="0" role="application" aria-label="Pong court. Use arrow up and arrow down to move your paddle."></canvas>
     <div class="acts" id="acts"></div>
   </section>
 
@@ -51,6 +54,7 @@
     <section class="sec"><h2><span>Rules</span><span id="gameTag"></span></h2><div id="rules"></div></section>
     <section class="sec" id="logSec">
       <h2><span>Agent calls</span><span id="evCount">0</span></h2>
+      <div id="metricsLine" class="metrics">0 this round · 0 rejected · 0 bad</div>
       <div id="log"><p class="blank">No calls yet.</p></div>
     </section>
   </aside>

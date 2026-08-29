@@ -82,7 +82,8 @@ export function paintBoard(pulse?: string[]): void {
     b.textContent = v ? String(v) : '';
     if (v) b.classList.add('n' + v);
   }
-  if (pulse && pulse.length && window.anime) {
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (pulse && pulse.length && window.anime && !reduceMotion) {
     const els = pulse.map((k) => msGrid.querySelector(`[data-k="${k}"]`)).filter(Boolean);
     window.anime({ targets: els, scale: [0.6, 1], duration: 320, delay: window.anime.stagger(13), easing: 'easeOutBack' });
   }

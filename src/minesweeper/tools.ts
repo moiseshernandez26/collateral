@@ -27,7 +27,10 @@ export const MS_TOOLS: ToolDef[] = [
       'Opens a closed cell and passes the turn. If it had a mine, the point goes to the human. x is the column, y is the row, both range 0 to 8.',
     inputSchema: {
       type: 'object',
-      properties: { x: { type: 'integer' }, y: { type: 'integer' } },
+      properties: {
+        x: { type: 'integer', description: 'column, 0 to 8' },
+        y: { type: 'integer', description: 'row, 0 to 8' },
+      },
       required: ['x', 'y'],
     },
     run: guard((args) => {
@@ -42,7 +45,10 @@ export const MS_TOOLS: ToolDef[] = [
       'Claims a cell as a mine. Getting it right earns a point and keeps your turn, so it pays to chain every safe claim before opening anything. Getting it wrong only costs the turn.',
     inputSchema: {
       type: 'object',
-      properties: { x: { type: 'integer' }, y: { type: 'integer' } },
+      properties: {
+        x: { type: 'integer', description: 'column, 0 to 8' },
+        y: { type: 'integer', description: 'row, 0 to 8' },
+      },
       required: ['x', 'y'],
     },
     run: guard((args) => {

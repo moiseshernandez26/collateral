@@ -15,8 +15,8 @@ calling [[WebMCP]] tools. Internal demo, not a product.
 ```
 CLAUDE.md
 .kiro/specs/webmcp-arcade/
-    requirements.md    →  EARS, 12 requirements
-    design.md          →  architecture, contracts, generator
+    requirements.md    →  EARS, 14 requirements
+    design.md          →  architecture, contracts, generator, the Pong loop
     tasks.md           →  7 phases + backlog
 docs/
     INDEX.md           →  this file
@@ -40,7 +40,11 @@ src/                   →  the app, split by module (see CLAUDE.md architecture
 - **Solo mode** — a single player, no opponent, no two-player scoreboard.
   Reached automatically with no WebMCP, or by choosing "play solo" at the
   picker when WebMCP is available.
-- **Deduction aids** — `ms_frontier` and `c4_analysis`, which hand the agent the
-  constraints already solved. This is the real work of the project.
+- **Deduction aids** — `ms_frontier`, `c4_analysis`, and Pong's `intercept_y`,
+  which hand the agent the constraints already solved. This is the real work of
+  the project.
+- **The agent loop** — Pong's `pong_read` blocks until the ball comes at the
+  agent, so a request/response tool can drive a continuous game. The ball slows
+  while the agent decides.
 - **The three moments** — the page announces itself, the agent plays in view, the
   tools rotate when the game switches.

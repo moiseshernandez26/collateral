@@ -3,8 +3,15 @@
 A turn-based minigame arcade in the browser where the opponent is an
 **external agent** — a browser AI agent, an MCP inspector, whatever's on the
 other end — playing by calling [WebMCP](https://github.com/webmachinelearning/webmcp)
-tools registered with `document.modelContext.registerTool()`. Two games:
-a minesweeper duel and Connect 4.
+tools registered with `document.modelContext.registerTool()`. Three games:
+a minesweeper duel, Connect 4, and a real-time Pong.
+
+Pong is the interesting one. A tool call is request/response and an agent
+round-trip takes seconds, which is longer than the ball takes to cross the
+court — so instead of the agent polling the ball, `pong_read` blocks until the
+ball turns toward the agent and then hands back the interception point, and the
+ball crawls until the agent answers. The agent's ordinary call-and-respond
+rhythm becomes the rally. See `.kiro/specs/webmcp-arcade/design.md`.
 
 This is an internal demo built to teach WebMCP at work. It's not a product —
 see `CLAUDE.md` for what that means for how this repo is built and why some

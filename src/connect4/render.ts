@@ -37,7 +37,8 @@ export function paintBoard(dropAt?: [number, number]): void {
     if (v) b.classList.add(v === 'human' ? 'h' : 'a', 'dead');
     if (winLine.some(([wy, wx]) => wy === y && wx === x)) b.classList.add('win');
   }
-  if (dropAt && window.anime) {
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (dropAt && window.anime && !reduceMotion) {
     const el = c4Grid.querySelector(`[data-p="${dropAt[0]},${dropAt[1]}"]`);
     if (el) window.anime({ targets: el, translateY: [-58 * (dropAt[0] + 1), 0], duration: 400, easing: 'easeOutBounce' });
   }

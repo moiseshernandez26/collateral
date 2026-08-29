@@ -2,9 +2,10 @@ import { S } from '../state';
 import { toolDef } from './helpers';
 import { MS_TOOLS } from '../minesweeper/tools';
 import { C4_TOOLS } from '../connect4/tools';
-import type { GameId } from '../types';
+import { PONG_TOOLS } from '../pong/tools';
+import type { GameId, ToolDef } from '../types';
 
-const GAME_TOOLS: Record<GameId, typeof MS_TOOLS> = { ms: MS_TOOLS, c4: C4_TOOLS };
+const GAME_TOOLS: Record<GameId, ToolDef[]> = { ms: MS_TOOLS, c4: C4_TOOLS, pong: PONG_TOOLS };
 
 let gameCtrl: AbortController | null = null;
 

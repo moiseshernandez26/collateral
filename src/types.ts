@@ -1,5 +1,5 @@
 export type Player = 'human' | 'agent';
-export type GameId = 'ms' | 'c4';
+export type GameId = 'ms' | 'c4' | 'pong';
 
 export interface MatchState {
   game: GameId;
@@ -10,7 +10,7 @@ export interface MatchState {
   verdict: string;
   round: { human: number; agent: number };
   series: { human: number; agent: number };
-  solo: { msWins: number; c4Solved: number };
+  solo: { msWins: number; c4Solved: number; pongBest: number };
 }
 
 export interface ToolResult {
@@ -24,5 +24,7 @@ export interface ToolDef {
   description: string;
   inputSchema: Record<string, unknown>;
   annotations?: { readOnlyHint?: boolean };
+  // May return a promise: pong_read deliberately blocks until the ball comes
+  // at the agent, and switch_game/new_round await their re-registration.
   run: (args: Record<string, unknown>) => unknown;
 }
