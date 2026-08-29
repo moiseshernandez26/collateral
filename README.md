@@ -42,9 +42,9 @@ Without either of those, `document.modelContext` may still exist but nothing
 will call your tools — pick "play solo" at the prompt, or test the duel
 *interface* without a live agent via `http://localhost:5173/?duo=1`.
 
-Testing from another device on your LAN needs HTTPS — `npm run dev -- --host`
-serves a self-signed cert for exactly that (see `CLAUDE.md` → "How to test"
-for why and the one-time certificate-warning caveat).
+Testing from another device on your LAN needs HTTPS, since Chrome only treats
+plain HTTP as a secure context on `localhost` — run `HTTPS=1 npm run dev -- --host`
+for a self-signed certificate (see `CLAUDE.md` → "How to test" for the caveat).
 
 ## Commands
 

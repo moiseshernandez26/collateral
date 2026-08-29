@@ -1,18 +1,24 @@
 import { defineConfig } from 'vitest/config';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 
-// HTTPS (self-signed) is required for document.modelContext to be available
-// on a LAN IP: Chrome only treats http:// as a secure context for
-// localhost/127.0.0.1, never for a bare IP address. See CLAUDE.md's
-// "How to test" section.
+// Dev serves plain http by default: on localhost Chrome treats http:// as a
+// secure context anyway, so document.modelContext is there and nobody has to
+// click through a self-signed certificate warning.
+//
+// Opt back in with `HTTPS=1 npm run dev -- --host` when testing from another
+// device on the LAN. That case genuinely needs it — Chrome does NOT extend the
+// localhost exemption to a bare 192.168.x.x address, so over plain http WebMCP
+// silently disappears and the app quietly falls back to solo mode.
+const https = process.env.HTTPS === '1';
+
 export default defineConfig({
   // GitHub Pages serves this project at /collateral/, not the domain root.
   // CI (set by GitHub Actions) is the only environment that needs that
   // prefix; local dev and preview keep using '/'.
   base: process.env.CI ? '/collateral/' : '/',
-  plugins: [basicSsl()],
+  plugins: https ? [basicSsl()] : [],
   server: {
-    https: true,
+    https,
   },
   test: {
     // jsdom, not node: state.ts reads `location.search` at module load time.

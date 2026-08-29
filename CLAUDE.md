@@ -94,15 +94,17 @@ Three rules earned the hard way:
 - **Model Context Tool Inspector** extension to inspect and run tools by hand.
 - Without an agent: `?duo=1` in the URL (e.g. `http://localhost:5173/?duo=1`)
   forces duel mode to test the interface.
-- **Testing over a LAN IP needs HTTPS.** `document.modelContext` is gated to
-  secure contexts; Chrome trusts `localhost`/`127.0.0.1` over plain HTTP but not
-  a bare `192.168.x.x` address. `vite.config.ts` adds
-  `@vitejs/plugin-basic-ssl` for exactly this: `npm run dev -- --host` now
-  serves `https://<your-ip>:5173` (self-signed), so WebMCP works from other
-  devices on the LAN too. The browser will show a certificate warning on first
-  visit per device — click through it once ("Advanced" → "Proceed"), it's
-  expected for a self-signed cert. Plain `http://localhost:5173` still works
-  exactly as before.
+- **Dev serves plain HTTP by default**, so `npm run dev` gives you
+  `http://localhost:5173` with no certificate warning. WebMCP still works there:
+  Chrome treats `http://localhost` as a secure context.
+- **Testing over a LAN IP needs HTTPS**, and that is opt-in:
+  `HTTPS=1 npm run dev -- --host` serves `https://<your-ip>:5173` via
+  `@vitejs/plugin-basic-ssl`. Chrome does *not* extend the localhost exemption
+  to a bare `192.168.x.x` address, so without it `document.modelContext` is
+  simply absent and the app quietly falls back to solo mode — the failure looks
+  like "WebMCP isn't supported", not like a certificate problem, which is what
+  makes it worth remembering. Expect a self-signed certificate warning on first
+  visit per device; click through it once ("Advanced" → "Proceed").
 - Before any live demo: have the recorded backup video ready. It's a feature
   behind a flag.
 
