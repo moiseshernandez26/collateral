@@ -94,12 +94,16 @@ describe('step', () => {
 
   it('does not let a fast ball tunnel through a correctly placed paddle', () => {
     serve(-1);
-    ball.x = agentFace + PONG.ballR + 40; // leading edge still short of the face
+    const gap = 40;
+    ball.x = agentFace + PONG.ballR + gap; // leading edge still short of the face
     ball.y = 150;
     ball.vx = -PONG.maxSpeed;
     ball.vy = 0;
     setPaddle('agent', 150);
-    step(100); // one huge frame, the worst case for tunnelling
+    // One frame long enough to carry the ball clean past the paddle if the
+    // simulation didn't substep. Derived from the constants rather than
+    // hardcoded, so tuning the speeds can't quietly turn this into a no-op.
+    step(((gap * 2) / PONG.maxSpeed) * 1000);
     expect(S.round.human).toBe(0);
     expect(ball.vx).toBeGreaterThan(0);
   });
@@ -227,6 +231,43 @@ describe('the ready gate', () => {
     beginRally();
     run(600);
     expect((await pending).event).toBe('approaching');
+  });
+});
+
+// The constant that actually decides whether the demo works. Every speed in
+// PONG is a trade against this number: from the moment pong_read wakes the
+// agent, how long does it have before the ball reaches its paddle? A model
+// round-trip is 1-3s, and it may be several of them.
+describe('the agent time budget', () => {
+  it('leaves the agent many seconds to answer a shot, not milliseconds', async () => {
+    serve(-1);
+    ball.x = PONG.w * PONG.approachAt; // exactly at the wake-up line
+    ball.y = 150;
+    ball.vx = -PONG.baseSpeed;
+    ball.vy = 0;
+    setPaddle('agent', 150);
+
+    expect((await awaitApproach()).event).toBe('approaching'); // slow motion on
+    let ms = 0;
+    while (ball.vx < 0 && ms < 60_000) {
+      step(16);
+      ms += 16;
+    }
+    expect(ms / 1000).toBeGreaterThan(8);
+  });
+
+  it('still gives it a beat if it answers so late the slow motion expired', () => {
+    serve(-1);
+    ball.x = PONG.w * PONG.approachAt;
+    ball.vx = -PONG.baseSpeed;
+    ball.vy = 0;
+    let ms = 0;
+    while (ball.x > agentFace && ms < 60_000) {
+      step(16);
+      ms += 16;
+    }
+    // At full speed, the run-up from the wake line is still over a second.
+    expect(ms / 1000).toBeGreaterThan(1.2);
   });
 });
 

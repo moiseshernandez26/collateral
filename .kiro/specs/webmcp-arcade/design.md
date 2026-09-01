@@ -290,13 +290,17 @@ full rate. The worker is built from a blob, so there's still nothing to ship but
 static files. rAF still drives while the tab is visible, both share `lastAt`, and
 `maxTickMs` stays as a cap on any single catch-up slice.
 
-**The round doesn't start itself.** Opening Pong in a duel used to serve on the
-spot, which meant the first points went by while the human's hands were still off
-the keys and the agent had not worked out that it had a paddle at all. Now
-`startRound` only arms the round (`awaitingStart`); a modal explains the two
-sides and waits for the human to press "Start rally". Escape dismisses it — a
-modal you can't get out of is worse than the problem it solves — and the acts row
-keeps a "Start rally" button for as long as the round is parked.
+**The agent serves.** Opening Pong in a duel used to serve on the spot, which
+meant the first points went by while the human's hands were still off the keys
+and the agent had not worked out that it had a paddle at all. Now `startRound`
+only arms the round (`awaitingStart`), and the thing that serves the first ball
+is `pong_ready` — the agent checking in *is* the start signal. There is no
+button: a button gets pressed by reflex before the agent has read anything, which
+is the problem it was supposed to solve. A modal explains the two sides and shows
+whether the agent has checked in, then closes itself when it does. Escape
+dismisses it (a modal you can't get out of is worse than the problem it solves)
+and Space starts the round by hand, which is the escape hatch for `?duo=1` and
+for a demo with no agent attached.
 
 That pause is also where `pong_ready` earns its place. The agent is *told*, in
 one piece and before anything is moving, that it is the blue paddle on the left,
@@ -304,11 +308,20 @@ that only `pong_move` moves it, and how the read/move loop runs; calling it flip
 the modal's status line, so the room sees the agent has been briefed — or sees
 that it hasn't, and went clicking around instead. `you_are` then rides along on
 every single response, because a briefing read once is a briefing an agent can
-drift away from. A read placed before the human presses Start isn't wasted: it
-parks, and the serve wakes it through the ordinary `tryDeliver` path, so the
-agent catches the very first shot. If Start never comes, it answers
-`waiting_for_start` after `startPollMs` — soon enough to explain the silence,
-seldom enough not to become a spin.
+drift away from. A read placed before the round is served isn't wasted: it parks,
+and the serve wakes it through the ordinary `tryDeliver` path, so the agent
+catches the very first shot. If nothing serves it, the read answers
+`waiting_for_start` after the full read timeout, and `next_action` tells it to
+call `pong_ready`.
+
+**How much time the agent actually gets.** This is the number every speed in
+`PONG` is traded against, so it is worth stating: from the wake line at 72% of
+the court to the agent's own paddle face is about 320 px, and the ball covers it
+at 12% of 180 px/s while the agent is deciding. Measured on the live page, a
+shot woken mid-court took **10 seconds** to arrive. That is several model
+round-trips, not one. Even with the slow motion expired, the same run-up at full
+speed is still over a second. The base speed is deliberately low for a Pong —
+playability was never the binding constraint here, the round-trip was.
 
 **The human plays with the arrow keys, and only with them.** There is no pointer
 control, and its absence is a feature. An agent that fails to notice the tools

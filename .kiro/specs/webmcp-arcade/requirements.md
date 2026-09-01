@@ -227,15 +227,17 @@ sees that WebMCP is not limited to games that politely wait for the agent.
 12. WHEN the window loses focus THE SYSTEM SHALL treat every held key as released,
     so the paddle does not keep gliding on the keyup that never arrives.
 13. WHILE in a duel THE SYSTEM SHALL NOT serve the first ball of a round until the
-    player confirms, and SHALL say on screen that the round is waiting.
+    agent checks in with the briefing tool, and SHALL say on screen that the round
+    is waiting on it. Checking in is the start signal; there is no button.
 14. THE SYSTEM SHALL offer a briefing tool that states which paddle is the agent's,
     that only its move tool moves it, and how the read/move loop runs; and WHEN the
-    agent calls it THE SYSTEM SHALL show on screen that the agent has checked in.
+    agent calls it THE SYSTEM SHALL show on screen that the agent has checked in
+    and serve the first ball.
 15. WHILE a round is waiting to be started THE SYSTEM SHALL answer a read with a
     distinct event naming that reason, rather than leaving it parked for its full
     timeout.
-16. WHEN the player starts the round THE SYSTEM SHALL wake a read that was already
-    parked, so the agent does not miss the first shot.
+16. WHEN the round is served THE SYSTEM SHALL wake a read that was already parked,
+    so the agent does not miss the first shot.
 17. THE SYSTEM SHALL end every Pong tool response with the next call the agent
     should make, so that an agent which stops to report between shots is the
     exception rather than the default.

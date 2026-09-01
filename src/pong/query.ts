@@ -45,7 +45,7 @@ export function nextAction(event: string, interceptY: number | null): string {
     case 'moved':
       return 'call pong_read again RIGHT NOW to wait for the next shot. The rally is still running.';
     case 'waiting_for_start':
-      return 'the human has not pressed "Start rally" yet. Call pong_read again immediately and keep waiting — do not answer the user, stay in the loop.';
+      return 'the round has not started: call pong_ready to serve the first ball, then call pong_read again. Do not answer the user, stay in the loop.';
     case 'timeout':
       return 'nothing came at you yet. Call pong_read again immediately — do not answer the user, stay in the loop.';
     case 'superseded':
@@ -130,7 +130,7 @@ export function briefing(): string {
     'the round. Say nothing until a result comes back with round_over: true.',
     '',
     awaitingStart
-      ? 'THE ROUND HAS NOT STARTED: the human still has to press "Start rally" on the page. Call pong_read now anyway — it parks and waits for them, and if they are slow it answers "waiting_for_start", which just means call it again.'
+      ? 'THE ROUND HAS NOT STARTED YET — calling this tool is what serves the first ball, so it is starting now. Go straight into the loop: call pong_read.'
       : 'THE ROUND IS LIVE. Call pong_read now.',
   ].join('\n');
 }
@@ -140,7 +140,7 @@ export function boardText(): string {
   return [
     `you are ${YOU_ARE}`,
     awaitingStart
-      ? 'the round has NOT started: the human has to press "Start rally" on the page. call pong_ready, then pong_read, which waits for them.'
+      ? 'the round has NOT started: call pong_ready, which serves the first ball, then go into the pong_read / pong_move loop.'
       : 'the round is live',
     `court ${PONG.w}x${PONG.h}, you defend the left edge, the human defends the right`,
     `ball  x=${r1(ball.x)} y=${r1(ball.y)} vx=${r1(ball.vx)} vy=${r1(ball.vy)} (${pct(ball.x, PONG.w)}% across)`,

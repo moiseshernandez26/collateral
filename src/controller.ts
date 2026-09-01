@@ -62,7 +62,7 @@ function paintTurn(): void {
     if (S.duel && awaitingStart) {
       t.className = 'turn h';
       who.textContent = 'Ready?';
-      hint.textContent = 'the ball waits · press "Start rally"';
+      hint.textContent = 'ball parked · waiting on pong_ready';
       return;
     }
     t.className = 'turn ' + (S.duel && thinking ? 'a' : 'h');

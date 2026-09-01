@@ -165,11 +165,18 @@ with no idea why nothing is happening. Don't turn it back into a bare `return`.
 make next. Without it the agent answers one read, writes its user a progress
 report, and the rally ends with its paddle parked. Keep it on every response.
 
-**A Pong duel doesn't serve on its own.** `startRound` only arms the round; a
-modal waits for the human to press "Start rally", which is also the window in
-which the agent calls `pong_ready` and gets told, in one piece, that it is the
-blue paddle on the left. `you_are` then rides on every response. All of that
+**In a Pong duel the agent serves.** `startRound` only arms the round;
+`pong_ready` is what puts the ball in play, so checking in *is* the start signal
+and there is no button (Space is the escape hatch for `?duo=1` and demos with no
+agent attached). That call is also where the agent is told, in one piece, that it
+is the blue paddle on the left; `you_are` then rides on every response. All of it
 exists because an agent walked into a live rally not knowing it had a paddle.
+
+**Pong's ball is slow on purpose.** `baseSpeed` 180 / `maxSpeed` 380 are not
+playability numbers, they are round-trip numbers: from the wake line to the
+agent's paddle is ~10 s of real time in slow motion, which is several model
+round-trips. `actions.test.ts` has a test asserting that budget — if you tune a
+speed and it goes red, the demo is what broke, not the test.
 
 **Pong's paddle is keyboard-only, and that is not an oversight** — don't add
 mouse or touch control back. An agent that misses the tools and falls back on

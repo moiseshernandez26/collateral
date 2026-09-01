@@ -167,8 +167,9 @@ export function startRound(): void {
   serve(-1);
 }
 
-/** The human pressed "Start rally": serve at the agent, so its first
- *  pong_read has something to catch straight away. */
+/** Serves the first ball of the round, at the agent, so its first pong_read
+ *  has something to catch straight away. Triggered by the agent's own
+ *  pong_ready — checking in is what starts the match. */
 export function beginRally(): void {
   if (!awaitingStart || S.over) return;
   serve(-1);

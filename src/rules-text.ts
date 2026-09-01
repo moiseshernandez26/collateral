@@ -20,8 +20,8 @@ export const RULES: Record<string, string> = {
     <li>Solving it moves you to the next puzzle.</li></ul>`,
   pong_duel: `Real-time, not turn-based. You are the <b>red</b> paddle on the right,
     the agent is the <b>blue</b> one on the left. First to 5 points wins the round.
-    <b>Nothing moves until you press "Start rally"</b>, so the agent has time to call
-    <code>pong_ready</code> and find out which paddle is its own.
+    <b>The agent serves.</b> Nothing moves until it calls <code>pong_ready</code>,
+    which is also where it finds out which paddle is its own.
     <ul><li>Move your paddle with the <b>↑</b> and <b>↓</b> arrow keys — hold <b>Shift</b>
     for fine control. The mouse does nothing here, by design.</li>
     <li>The agent plays only through its tools; it never touches the page.</li>

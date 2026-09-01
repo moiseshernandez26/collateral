@@ -34,13 +34,10 @@
       Real-time, no turns. You are the <b class="tag h">red</b> paddle on the right
       and move it with <b>↑</b> / <b>↓</b> (hold <b>Shift</b> for fine control).
       The agent is the <b class="tag a">blue</b> paddle on the left and plays only
-      through its tools. The ball is not in play until you start it.
+      through its tools. The ball stays parked until the agent checks in.
     </p>
-    <div id="pongReadyStatus" class="ready-status">waiting for the agent to check in…</div>
-    <div class="picker-choices">
-      <button id="pongStart" class="human">Start rally</button>
-    </div>
-    <p class="ready-esc">Esc to close and look around first — the rally waits either way.</p>
+    <div id="pongReadyStatus" class="ready-status">waiting for the agent to call pong_ready…</div>
+    <p class="ready-esc">The agent serves the first ball by calling <code>pong_ready</code>. Esc to look around first; Space starts it by hand if no agent is attached.</p>
   </div>
 </div>
 

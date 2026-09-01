@@ -43,7 +43,7 @@ export function awaitApproach(): Promise<Snapshot> {
   settle('superseded'); // a second read replaces the first, never stacks
   return new Promise<Snapshot>((resolve) => {
     // One wait, whatever it is waiting for. A read placed before the human
-    // presses "Start rally" parks right through it and is woken by the serve,
+    // calls pong_ready parks right through it and is woken by the serve,
     // so the agent crosses the start of the round inside a single call — every
     // early answer is another chance for it to leave the loop and report back
     // to its user, and a paddle whose agent has wandered off stands still.
