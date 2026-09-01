@@ -1,7 +1,9 @@
 import { paint } from '../controller';
 import { moveAgentPaddle } from './actions';
 import { awaitApproach } from './agent';
-import { boardText } from './query';
+import { boardText, briefing } from './query';
+import { setAgentReady } from './state';
+import { paintReady } from './ready';
 import type { ToolDef } from '../types';
 
 // Note there is no guard() here, unlike the other two games. Pong is real-time:
@@ -10,9 +12,22 @@ import type { ToolDef } from '../types';
 // round is over, sending a non-number — are enforced inside moveAgentPaddle.
 export const PONG_TOOLS: ToolDef[] = [
   {
+    name: 'pong_ready',
+    description:
+      'CALL THIS FIRST, before any other pong tool and before the ball is in play. It tells you which paddle is yours, how the rally loop works, and checks you in on the page so the human knows you have been briefed and can start the round.',
+    inputSchema: { type: 'object', properties: {} },
+    run: () => {
+      setAgentReady(true);
+      paintReady();
+      paint();
+      return briefing();
+    },
+  },
+  {
     name: 'pong_state',
     description:
-      "The court right now, as text, without waiting for anything. Use it to get your bearings; use pong_read to actually play.",
+      'The court right now, as text, without waiting for anything. Use it to get your bearings; use pong_read to actually play. ' +
+      'You are the BLUE paddle on the left; the human is the RED one on the right. Play ONLY through these three tools — never move the mouse, click, drag, press keys, or take a screenshot of this page. The mouse and the arrow keys belong to the human player, and using them plays their paddle for them instead of yours.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true },
     run: () => boardText(),
@@ -20,9 +35,10 @@ export const PONG_TOOLS: ToolDef[] = [
   {
     name: 'pong_read',
     description:
+      'Your only way to see the ball, and the only input you need: do not screenshot, click, or move the mouse to play Pong — pong_read plus pong_move is the whole game. ' +
       "Waits for the ball, then tells you exactly where to be. THIS CALL DOES NOT ANSWER IMMEDIATELY: it blocks until the ball is heading at your side of the court, then returns `intercept_y` — the y where the ball will actually reach your paddle, with the wall bounces already worked out. While you decide, the page slows the ball to a crawl so a round-trip to you fits inside the rally. " +
-      "PLAY IT AS A LOOP, ALL IN ONE TURN, WITHOUT STOPPING TO REPORT BETWEEN SHOTS: call pong_read, then immediately call pong_move with the `intercept_y` it gave you, then call pong_read again, and keep going until a result comes back with `round_over: true`. " +
-      "`event` says what woke you: 'approaching' means play the shot now; 'timeout' means nothing came at you in time, just call pong_read again; 'round_over' or 'not_a_duel' means stop looping. " +
+      "PLAY IT AS A LOOP, ALL IN ONE TURN, WITHOUT STOPPING TO REPORT BETWEEN SHOTS: call pong_read, then immediately call pong_move with the `intercept_y` it gave you, then call pong_read again, and keep going until a result comes back with `round_over: true`. Every result names the next call in `next_action` — make it straight away. Writing the user a progress report mid-rally leaves your paddle standing still and loses the round; say nothing until it is over. " +
+      "`event` says what woke you: 'approaching' means play the shot now; 'waiting_for_start' means the human has not pressed \"Start rally\" yet, so just call pong_read again and it will keep waiting for them; 'timeout' means nothing came at you in time, call pong_read again; 'round_over' or 'not_a_duel' means stop looping. " +
       'If this call fails outright instead of answering, the game was switched out from under it and these tools no longer exist — call get_match rather than retrying.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true },
@@ -31,7 +47,8 @@ export const PONG_TOOLS: ToolDef[] = [
   {
     name: 'pong_move',
     description:
-      'Puts the centre of your paddle at y and lets the ball go back to full speed. Pass the `intercept_y` you just got from pong_read to return the shot. y is clamped to the court, so an out-of-range value is pinned rather than rejected. Call pong_read again straight after this — the rally is still running.',
+      'Moves YOUR paddle — the blue one on the left. This is the only way to move it; dragging on the page moves the human\'s paddle, not yours. ' +
+      'Puts the centre of your paddle at y and lets the ball go back to full speed. Pass the `intercept_y` you just got from pong_read to return the shot. y is clamped to the court, so an out-of-range value is pinned rather than rejected. CALL pong_read AGAIN IMMEDIATELY AFTER THIS — the rally is still running and the next shot is already on its way.',
     inputSchema: {
       type: 'object',
       properties: {

@@ -3,6 +3,8 @@
 import { S } from './state';
 import { paint, startGame } from './controller';
 import { claimMode, flagMode, fresh, toggleClaimMode, toggleFlagMode } from './minesweeper/state';
+import { awaitingStart } from './pong/state';
+import { start as startRally } from './pong/ready';
 
 const actsEl = document.getElementById('acts')!;
 
@@ -46,6 +48,8 @@ export function paintActs(): void {
       btn('New game', () => startGame('ms', true));
     }
   } else if (S.duel) {
+    // The way back in if the ready modal was dismissed to read the rules first.
+    if (S.game === 'pong' && awaitingStart && !S.over) btn('Start rally', startRally, { on: true });
     btn('New round', () => startGame(S.game, true));
     btn('Reset score', resetScore);
   } else if (S.game === 'c4') {

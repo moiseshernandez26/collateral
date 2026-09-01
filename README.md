@@ -11,7 +11,11 @@ round-trip takes seconds, which is longer than the ball takes to cross the
 court — so instead of the agent polling the ball, `pong_read` blocks until the
 ball turns toward the agent and then hands back the interception point, and the
 ball crawls until the agent answers. The agent's ordinary call-and-respond
-rhythm becomes the rally. See `.kiro/specs/webmcp-arcade/design.md`.
+rhythm becomes the rally. You play it with the ↑ / ↓ arrow keys — deliberately
+not with the mouse, so an agent that reaches for the pointer instead of the tools
+can't end up playing your paddle. A duel round waits behind a "ready?" prompt
+until you start it, which is when the agent calls `pong_ready` and gets told
+which paddle is its own. See `.kiro/specs/webmcp-arcade/design.md`.
 
 This is an internal demo built to teach WebMCP at work. It's not a product —
 see `CLAUDE.md` for what that means for how this repo is built and why some

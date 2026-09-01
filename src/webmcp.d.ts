@@ -15,6 +15,12 @@ interface ModelContextTool {
 
 interface ModelContext {
   registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => Promise<unknown>;
+  // Read back what the browser actually holds, rather than trusting our own
+  // count of what we asked it to register.
+  getTools?: () => Promise<{ name: string }[]>;
+  // Fires once per tool added or removed, so it needs debouncing before it is
+  // worth showing to anyone.
+  ontoolchange?: (() => void) | null;
 }
 
 interface Document {

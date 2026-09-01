@@ -13,6 +13,12 @@ export const PONG = {
   baseSpeed: 235,
   maxSpeed: 520,
   speedStep: 15, // added to the ball's speed on every paddle hit
+  // The human paddle is driven only by the arrow keys — there is no pointer
+  // control, on purpose (see render.ts). It has to outrun the ball's vertical
+  // component or the court would be indefensible, hence a speed above
+  // baseSpeed; Shift drops it to `paddleFine` for placing the last few pixels.
+  paddleSpeed: 420,
+  paddleFine: 150,
   target: 5, // points that win a duel round
   // The ball crawls at this fraction of full speed while the agent is deciding.
   // Without it a round-trip to the agent (~1-3s) is longer than the ball takes
@@ -47,6 +53,11 @@ export let ball: Ball = { x: PONG.w / 2, y: PONG.h / 2, vx: 0, vy: 0 };
 export let paddle: Record<Player, number> = { human: PONG.h / 2, agent: PONG.h / 2 };
 export let rallies = 0;
 export let running = false;
+// A duel round doesn't serve the moment Pong opens: the ball waits behind a
+// "ready?" modal, because starting a live match under the agent's feet is how
+// the first point gets conceded before anyone has read the rules.
+export let awaitingStart = false;
+export let agentReady = false; // the agent has called pong_ready and checked in
 export let thinking = false; // a pong_read resolved and no pong_move has landed yet
 export let thinkingSince = 0;
 export let approachFired = false; // the agent has already been woken for this approach
@@ -72,6 +83,14 @@ export function setApproachFired(v: boolean): void {
   approachFired = v;
 }
 
+export function setAwaitingStart(v: boolean): void {
+  awaitingStart = v;
+}
+
+export function setAgentReady(v: boolean): void {
+  agentReady = v;
+}
+
 export function addRally(): void {
   rallies++;
 }
@@ -84,6 +103,8 @@ export function blank(): void {
   thinking = false;
   thinkingSince = 0;
   approachFired = false;
+  awaitingStart = false;
+  agentReady = false;
 }
 
 // `toward` is -1 to serve at the agent (left) or 1 to serve at the human.
@@ -97,4 +118,5 @@ export function serve(toward: -1 | 1): void {
   thinking = false;
   thinkingSince = 0;
   running = true;
+  awaitingStart = false;
 }

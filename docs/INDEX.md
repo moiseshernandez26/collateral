@@ -46,5 +46,8 @@ src/                   →  the app, split by module (see CLAUDE.md architecture
 - **The agent loop** — Pong's `pong_read` blocks until the ball comes at the
   agent, so a request/response tool can drive a continuous game. The ball slows
   while the agent decides.
+- **The ready gate** — a Pong duel doesn't serve until the human presses "Start
+  rally". That pause is when the agent calls `pong_ready` and is told which
+  paddle is its own; the modal shows the room that it checked in.
 - **The three moments** — the page announces itself, the agent plays in view, the
   tools rotate when the game switches.

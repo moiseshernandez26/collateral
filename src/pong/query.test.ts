@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { S } from '../state';
 import { PONG, ball, blank, serve, setPaddle, agentFace, humanFace } from './state';
-import { step } from './actions';
-import { predict, snapshot, boardText } from './query';
+import { step, startRound } from './actions';
+import { predict, snapshot, boardText, briefing, nextAction } from './query';
 
 beforeEach(() => {
   blank();
@@ -106,7 +106,73 @@ describe('boardText', () => {
     const text = boardText();
     expect(text).toContain('heading toward you');
     expect(text).toContain(`first to ${PONG.target}`);
-    expect(text.split('\n').length).toBe(5);
+    expect(text.split('\n').length).toBe(7);
+  });
+
+  // Which paddle is the agent's leads every response on purpose: the one time
+  // it was only in the tool descriptions, the agent played the human's paddle.
+  it("opens by saying which paddle is the agent's", () => {
+    serve(-1);
+    expect(boardText().split('\n')[0]).toContain('BLUE paddle on the LEFT');
+    expect(snapshot('x').you_are).toContain('BLUE paddle on the LEFT');
+  });
+
+  it('says the round has not started while it waits on the human', () => {
+    startRound();
+    expect(boardText()).toContain('has NOT started');
+    expect(snapshot('x').waiting_for_start).toBe(true);
+  });
+});
+
+// The field that keeps the agent in the rally. Without it the agent answers one
+// read, writes the user a progress report, and its paddle stops for the round.
+describe('next_action', () => {
+  it('names the exact move to make when the ball is coming', () => {
+    serve(-1);
+    ball.x = 300;
+    ball.y = 120;
+    ball.vx = -300;
+    ball.vy = 0;
+    const s = snapshot('approaching');
+    expect(s.next_action).toContain(`pong_move with y=${s.intercept_y}`);
+    expect(s.next_action).toMatch(/pong_read again/);
+  });
+
+  it('sends the agent back to pong_read after a move and after a timeout', () => {
+    serve(-1);
+    expect(snapshot('moved').next_action).toMatch(/pong_read/);
+    expect(snapshot('timeout').next_action).toMatch(/pong_read again/);
+    expect(nextAction('waiting_for_start', null)).toMatch(/pong_read again/);
+  });
+
+  it('is the one place that tells it to stop', () => {
+    serve(-1);
+    for (const e of ['round_over', 'not_a_duel', 'not_active']) {
+      expect(nextAction(e, null)).toMatch(/stop looping/);
+    }
+  });
+});
+
+describe('briefing', () => {
+  it("names the agent's paddle, its x, and forbids driving the page by hand", () => {
+    serve(-1);
+    const text = briefing();
+    expect(text).toContain('BLUE paddle on the LEFT');
+    expect(text).toContain(`x=${agentFace}`);
+    expect(text).toContain('pong_move');
+    expect(text).toMatch(/do not click|Do NOT click/i);
+  });
+
+  it('spells out the read/move loop, since that is where agent behaviour lives', () => {
+    serve(-1);
+    const text = briefing();
+    expect(text).toContain('pong_read');
+    expect(text).toContain('round_over: true');
+  });
+
+  it('tells the agent to wait while the round is still parked', () => {
+    startRound();
+    expect(briefing()).toContain('HAS NOT STARTED');
   });
 });
 

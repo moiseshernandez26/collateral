@@ -27,6 +27,23 @@
   </div>
 </div>
 
+<div id="pongReady" class="picker">
+  <div class="picker-card">
+    <h2>Pong · ready?</h2>
+    <p>
+      Real-time, no turns. You are the <b class="tag h">red</b> paddle on the right
+      and move it with <b>↑</b> / <b>↓</b> (hold <b>Shift</b> for fine control).
+      The agent is the <b class="tag a">blue</b> paddle on the left and plays only
+      through its tools. The ball is not in play until you start it.
+    </p>
+    <div id="pongReadyStatus" class="ready-status">waiting for the agent to check in…</div>
+    <div class="picker-choices">
+      <button id="pongStart" class="human">Start rally</button>
+    </div>
+    <p class="ready-esc">Esc to close and look around first — the rally waits either way.</p>
+  </div>
+</div>
+
 <div class="bar">
   <h1>Duel</h1>
   <span id="pill" class="pill off">checking…</span>
@@ -46,7 +63,7 @@
     <div id="msGrid"></div>
     <div id="c4Grid" style="display:none"></div>
     <canvas id="pongCanvas" width="480" height="300" style="display:none"
-            tabindex="0" role="application" aria-label="Pong court. Use arrow up and arrow down to move your paddle."></canvas>
+            tabindex="0" role="application" aria-label="Pong court. Use the arrow up and arrow down keys to move your paddle."></canvas>
     <div class="acts" id="acts"></div>
   </section>
 
@@ -55,7 +72,7 @@
     <section class="sec" id="logSec">
       <h2><span>Agent calls</span><span id="evCount">0</span></h2>
       <div id="metricsLine" class="metrics">0 this round · 0 rejected · 0 bad</div>
-      <div id="log"><p class="blank">No calls yet.</p></div>
+      <div id="log"><p class="blank"><b>No calls yet.</b> The tools are registered and waiting. If nothing shows up here, the agent is not calling them — check that your agent is attached to <b>this tab</b>, and that it picked up the tool list after the page loaded.</p></div>
     </section>
   </aside>
 </div>

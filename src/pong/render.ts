@@ -1,7 +1,8 @@
 import { S } from '../state';
 import { paint } from '../controller';
 import { PONG, ball, paddle, running, thinking, agentFace, humanFace } from './state';
-import { step, moveHumanPaddle } from './actions';
+import { step, driveHumanPaddle } from './actions';
+import { startHeartbeat, stopHeartbeat } from './clock';
 
 const canvas = document.getElementById('pongCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -15,35 +16,48 @@ const AGENT = col('--agent', '#3F35B8');
 const RULE = col('--rule', '#7C8878');
 
 let raf = 0;
-let fallback = 0;
+let beating = false;
 let lastAt = 0;
 let wired = false;
 let paintedThinking = false;
 
-function pointerY(clientY: number): number {
-  const r = canvas.getBoundingClientRect();
-  return ((clientY - r.top) / r.height) * PONG.h;
+// Which arrow keys are down right now. The paddle is moved by the render loop
+// from these, not by the keydown event, so holding a key glides instead of
+// stuttering along with the OS key-repeat delay.
+const held = { up: false, down: false, fine: false };
+
+// The arrow keys are the ONLY way to move the human paddle. There is
+// deliberately no pointer control: an agent driving this page with computer-use
+// instead of the tools would otherwise be dragging the human's paddle around
+// with the mouse it moves, which is exactly what it looked like when it went
+// wrong live.
+function onKey(e: KeyboardEvent, down: boolean): void {
+  if (e.key === 'Shift') {
+    held.fine = down;
+    return;
+  }
+  if (S.game !== 'pong') return;
+  if (e.key === 'ArrowUp') held.up = down;
+  else if (e.key === 'ArrowDown') held.down = down;
+  else return;
+  e.preventDefault(); // arrows scroll the page otherwise
+}
+
+function releaseKeys(): void {
+  held.up = held.down = held.fine = false;
 }
 
 function wire(): void {
   if (wired) return;
   wired = true;
 
-  canvas.addEventListener('pointermove', (e) => {
-    if (S.game !== 'pong' || S.over) return;
-    e.preventDefault();
-    moveHumanPaddle(pointerY(e.clientY));
-  });
-  // Keyboard is not a nicety here: the canvas is the only control, so without
-  // it Pong would be unplayable without a pointer (R11.5).
-  canvas.addEventListener('keydown', (e) => {
-    if (S.game !== 'pong' || S.over) return;
-    const stepPx = e.shiftKey ? 8 : 24;
-    if (e.key === 'ArrowUp') moveHumanPaddle(paddle.human - stepPx);
-    else if (e.key === 'ArrowDown') moveHumanPaddle(paddle.human + stepPx);
-    else return;
-    e.preventDefault();
-  });
+  // Listening on the window, not the canvas: requiring a click to focus the
+  // court first is the kind of thing that stalls a live demo.
+  window.addEventListener('keydown', (e) => onKey(e, true));
+  window.addEventListener('keyup', (e) => onKey(e, false));
+  // A keyup that lands while the tab is unfocused never arrives, and the paddle
+  // would keep gliding into the wall on return.
+  window.addEventListener('blur', releaseKeys);
 }
 
 export function buildGrid(): void {
@@ -57,22 +71,22 @@ export function buildGrid(): void {
 
 export function stopLoop(): void {
   if (raf) cancelAnimationFrame(raf);
-  if (fallback) clearInterval(fallback);
+  stopHeartbeat();
   raf = 0;
-  fallback = 0;
+  beating = false;
   lastAt = 0;
 }
 
-// requestAnimationFrame does not run at all in a hidden tab, and a hidden tab
-// is not hypothetical here: the agent driving the game may well live in
-// another window, which is exactly when Pong must keep running. So the clock
-// is wall-time and a timer takes over whenever frames stop coming. Both
-// drivers share `lastAt`, so whichever fires first consumes the elapsed time
-// and they can never double-step.
+// The clock is wall time, never frame count. rAF drives it while the tab is
+// visible; a worker heartbeat takes over while it is hidden (see clock.ts for
+// why it has to be a worker). Both drivers share `lastAt`, so whichever fires
+// first consumes the elapsed time and they can never double-step.
 function advance(): void {
   const t = performance.now();
   const dt = lastAt ? t - lastAt : 16;
   lastAt = t;
+  const dir: -1 | 0 | 1 = held.up === held.down ? 0 : held.up ? -1 : 1;
+  driveHumanPaddle(dir, dt, held.fine);
   const scored = step(dt);
   // The turn box has to follow the slow-motion window too, otherwise it keeps
   // reading "Rally" the whole time the agent is deciding. Repainting on the
@@ -89,11 +103,12 @@ function startLoop(): void {
     lastAt = 0;
     raf = requestAnimationFrame(frame);
   }
-  if (!fallback) {
-    fallback = window.setInterval(() => {
+  if (!beating) {
+    beating = true;
+    startHeartbeat(() => {
       if (S.game !== 'pong') return stopLoop();
       if (document.hidden && running && !S.over) advance();
-    }, 100);
+    });
   }
 }
 

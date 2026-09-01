@@ -3,6 +3,7 @@ import { S, FORCE_DUO } from './state';
 import { startGame } from './controller';
 import { CORE } from './tools/core';
 import { toolDef } from './tools/helpers';
+import { watchToolChanges } from './tools/registry';
 
 function goSolo(msg: string): void {
   S.duel = false;
@@ -15,6 +16,7 @@ function goSolo(msg: string): void {
 
 async function playVsAgent(mc: ModelContext): Promise<void> {
   try {
+    watchToolChanges();
     for (const t of CORE) await mc.registerTool(toolDef(t));
     S.mcp = true;
     S.duel = true;

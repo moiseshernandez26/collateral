@@ -15,6 +15,8 @@ import {
   setRunning,
   setThinking,
   setApproachFired,
+  setAwaitingStart,
+  awaitingStart,
   addRally,
   serve,
 } from './state';
@@ -25,15 +27,31 @@ export function moveAgentPaddle(y: unknown): ToolResult {
   if (S.game !== 'pong') return { ok: false, reason: 'pong is not the active game, call switch_game first' };
   if (!S.duel) return { ok: false, reason: 'pong is in single-player mode, there is no agent paddle' };
   if (S.over) return { ok: false, reason: 'the round is already over' };
-  if (typeof y !== 'number' || !Number.isFinite(y)) return { ok: false, reason: 'y must be a finite number' };
+  // A quoted number is taken as a number. Rejecting "106.8" would be enforcing
+  // a JSON typing rule, not a rule of the game, and it costs the agent a shot.
+  const n = typeof y === 'string' && y.trim() !== '' ? Number(y) : y;
+  if (typeof n !== 'number' || !Number.isFinite(n))
+    return { ok: false, reason: 'y must be a finite number, the intercept_y that pong_read gave you' };
 
-  const at = setPaddle('agent', y);
+  const at = setPaddle('agent', n);
   setThinking(false); // full speed resumes the moment the agent commits
-  return { ...snapshot('moved'), paddle_y: at, clamped: at !== y };
+  return { ...snapshot('moved'), paddle_y: at, clamped: at !== n };
 }
 
 export function moveHumanPaddle(y: number): void {
   setPaddle('human', y);
+}
+
+/**
+ * Moves the human paddle by however far it travels in `dtMs` at `dir`
+ * (-1 up, 1 down, 0 idle). Time-based rather than a fixed jump per keydown, so
+ * holding the key glides at the same speed no matter the frame rate or the key
+ * repeat delay — the render loop calls this once per frame with the elapsed ms.
+ */
+export function driveHumanPaddle(dir: -1 | 0 | 1, dtMs: number, fine = false): void {
+  if (!dir || S.game !== 'pong' || S.over) return;
+  const speed = fine ? PONG.paddleFine : PONG.paddleSpeed;
+  setPaddle('human', paddle.human + dir * speed * (Math.min(dtMs, PONG.maxTickMs) / 1000));
 }
 
 function bounce(who: Player): void {
@@ -137,7 +155,21 @@ export function step(dtMs: number): boolean {
 }
 
 export function startRound(): void {
-  // Duel: serve at the agent so its first pong_read has something to catch.
+  // A duel doesn't serve on its own. Opening Pong used to drop straight into a
+  // live rally — points went by before the human had their hands on the keys or
+  // the agent knew which paddle was its own — so the round now waits behind the
+  // ready modal until beginRally() is called.
+  if (S.duel) {
+    setAwaitingStart(true);
+    return;
+  }
   // Solo: serve at the left wall, which gives the player a beat to settle in.
+  serve(-1);
+}
+
+/** The human pressed "Start rally": serve at the agent, so its first
+ *  pong_read has something to catch straight away. */
+export function beginRally(): void {
+  if (!awaitingStart || S.over) return;
   serve(-1);
 }

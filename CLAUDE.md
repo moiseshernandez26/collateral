@@ -134,6 +134,11 @@ the same way:
 - `tools.ts` — assembles the game's `ToolDef`s using `guard()` from
   `tools/helpers.ts`.
 
+`pong/` carries three more, each split out to stay under the line limit and each
+covering something the other games don't have: `agent.ts` (the blocking read and
+its single waiter), `ready.ts` (the "ready?" gate before the first serve), and
+`clock.ts` (the worker heartbeat that keeps a hidden tab running).
+
 **Pong bends two of those rules on purpose**, and neither should be "tidied up":
 it renders to a canvas on its own wall-clock loop instead of being repainted by
 `paint()`, and its tools skip `guard()` because a real-time game has no turns to
@@ -141,6 +146,29 @@ be out of. `pong_read` is also deliberately a *blocking* tool — it parks until
 the ball comes at the agent. Read design.md's "Pong and the agent loop" before
 changing anything in `pong/`; every constant in `PONG` is load-bearing and at
 least three of them were bugs first.
+
+**Pong's clock runs in a Web Worker whenever the tab is hidden**
+(`pong/clock.ts`), and that is load-bearing, not a flourish: Chrome throttles
+main-thread timers in a background tab to about one a second, which froze the
+ball — so `pong_read` never had a shot to hand over and the agent's paddle stood
+still all round. rAF still drives the visible case. Don't put the heartbeat back
+on `setInterval`.
+
+**Every Pong response ends with `next_action`**, naming the call the agent should
+make next. Without it the agent answers one read, writes its user a progress
+report, and the rally ends with its paddle parked. Keep it on every response.
+
+**A Pong duel doesn't serve on its own.** `startRound` only arms the round; a
+modal waits for the human to press "Start rally", which is also the window in
+which the agent calls `pong_ready` and gets told, in one piece, that it is the
+blue paddle on the left. `you_are` then rides on every response. All of that
+exists because an agent walked into a live rally not knowing it had a paddle.
+
+**Pong's paddle is keyboard-only, and that is not an oversight** — don't add
+mouse or touch control back. An agent that misses the tools and falls back on
+clicking and moving the mouse ends up dragging the *human's* paddle around, which
+is what it looked like the one time it happened live. Keys are the human's
+channel, tools are the agent's, and the separation is the point.
 
 `tools/helpers.ts` has `toolDef`, `wrapText`, `guard`, and `NOT_TURN`.
 `tools/registry.ts` builds the per-game tool map and runs the

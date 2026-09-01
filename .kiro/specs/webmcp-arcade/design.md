@@ -102,6 +102,7 @@ never a mine. Claiming during `fresh` is rejected: the board doesn't exist yet.
 
 | Tool | Read-only | Returns |
 | --- | --- | --- |
+| `pong_ready` | no | the full briefing — which paddle is the agent's, the loop — and checks it in on screen |
 | `pong_state` | yes | the court as text, immediately |
 | `pong_read` | yes | **blocks** until the ball turns toward the agent, then the interception point |
 | `pong_move` | no | where the paddle ended up, and resumes full speed |
@@ -155,6 +156,26 @@ solo" instead of assuming duel mode. Choosing solo skips tool registration
 entirely and behaves exactly like the no-WebMCP path; choosing vs-agent runs
 the normal registration flow. When the API is absent, boot proceeds straight
 to solo mode as before — there's nothing to ask about.
+
+The same gap shows up again once the page is running, so the UI names it. The
+whole API surface is `registerTool` / `getTools` / `executeTool` / `ontoolchange`
+— there is **no signal for "a consumer is attached"**, and no way to add one. So
+the honest proxy is whether a call has ever arrived: until one has, the pill
+reads `N tools · waiting for agent` in the human colour rather than the
+flattering `N tools active`, and the empty rail says the tools are registered and
+waiting and that the thing to check is whether the agent is attached to this tab.
+Without that, an agent silently ignoring the tools and a page that failed to
+register them look exactly the same from the room.
+
+The other half of that answer is evidence rather than assertion. `ontoolchange`
+fires once per tool added or removed — a game switch fires it a dozen times — so
+`registry.ts` debounces it, reads the list back with `getTools()`, and logs what
+the **browser** holds as a distinct line in the rail. The reported tool count
+comes from that read too, not from counting what we asked to register: a number
+we compute ourselves says 8 whether or not registration worked. So an empty rail
+now reads unambiguously — registration lines and no call lines means the tools
+are there and nothing is calling them. It also puts the third demo moment on the
+page itself instead of only in the inspector.
 
 ## The deduction aids
 
@@ -236,14 +257,68 @@ before it was pinned down:
   *delivered*, a read arriving a moment late would find the shot already marked
   and park until the next one — silently skipping the whole rally.
 
-**The clock is wall time, not frames.** `requestAnimationFrame` does not run in a
-hidden tab, and a hidden tab is not hypothetical: the agent may well be driving
-from another window, which is exactly when Pong has to keep going. So a timer
-takes over whenever frames stop arriving, and both drivers share one timestamp
-so they can never double-step. Hidden play is degraded, not broken — browsers
-clamp background timers to about a second, and `maxTickMs` caps how much of that
-gap is simulated, so the game runs at roughly a quarter speed until the tab comes
-back.
+**The clock is wall time, not frames, and in a hidden tab it lives in a worker.**
+`requestAnimationFrame` does not run in a hidden tab, and a hidden tab is not
+hypothetical: the agent is usually driving from another window, which is exactly
+when Pong has to keep going. The first fix for that was a `setInterval` fallback,
+and it was not enough — measured in Chrome on a hidden tab:
+
+| clock | ticks in 5 s (asked for 100) |
+| --- | --- |
+| `setInterval(50ms)`, main thread | 6 |
+| `setInterval(50ms)`, dedicated worker | 103 |
+
+Background pages have their timers clamped to about one a second, and worse after
+a few minutes hidden. The symptom was not a slow game, it was a stopped one: the
+ball froze, so `pong_read` never had a shot to hand over, so the agent's paddle
+never moved — which from the room looks exactly like an agent that isn't playing.
+Timers inside a dedicated worker aren't clamped, and the `message` it posts is
+not a timer, so `clock.ts` runs the heartbeat there and the main thread ticks at
+full rate. The worker is built from a blob, so there's still nothing to ship but
+static files. rAF still drives while the tab is visible, both share `lastAt`, and
+`maxTickMs` stays as a cap on any single catch-up slice.
+
+**The round doesn't start itself.** Opening Pong in a duel used to serve on the
+spot, which meant the first points went by while the human's hands were still off
+the keys and the agent had not worked out that it had a paddle at all. Now
+`startRound` only arms the round (`awaitingStart`); a modal explains the two
+sides and waits for the human to press "Start rally". Escape dismisses it — a
+modal you can't get out of is worse than the problem it solves — and the acts row
+keeps a "Start rally" button for as long as the round is parked.
+
+That pause is also where `pong_ready` earns its place. The agent is *told*, in
+one piece and before anything is moving, that it is the blue paddle on the left,
+that only `pong_move` moves it, and how the read/move loop runs; calling it flips
+the modal's status line, so the room sees the agent has been briefed — or sees
+that it hasn't, and went clicking around instead. `you_are` then rides along on
+every single response, because a briefing read once is a briefing an agent can
+drift away from. A read placed before the human presses Start isn't wasted: it
+parks, and the serve wakes it through the ordinary `tryDeliver` path, so the
+agent catches the very first shot. If Start never comes, it answers
+`waiting_for_start` after `startPollMs` — soon enough to explain the silence,
+seldom enough not to become a spin.
+
+**The human plays with the arrow keys, and only with them.** There is no pointer
+control, and its absence is a feature. An agent that fails to notice the tools
+falls back on what it always has — screenshots, clicks, mouse moves — and with a
+pointer-driven paddle the visible result is the agent dragging *the human's*
+paddle around while its own sits still. That happened in testing, and it is a
+confusing thing to have happen in front of a room. Keyboard-only makes the two
+players physically separate: keys are the human's channel, tools are the agent's,
+and neither can reach the other's. The tool descriptions say so out loud too
+("never move the mouse, click, or screenshot — pong_read plus pong_move is the
+whole game"), on the same principle as everywhere else here: when an agent
+misbehaves, the fix goes in the description.
+
+The paddle moves from held-key state read once per frame, not from the keydown
+event, so holding a key glides at `paddleSpeed` px/s instead of stuttering along
+with the OS key-repeat delay; Shift drops to `paddleFine` for the last few
+pixels. `driveHumanPaddle` lives in `actions.ts` rather than `render.ts` for the
+usual reason — that keeps it in the tested engine layer, with `render.ts` holding
+nothing but the listeners. Keys are listened for on the window, not the canvas,
+because requiring a click to focus the court first is exactly the kind of thing
+that stalls a live demo; a `blur` handler releases everything, since a keyup that
+lands while the tab is unfocused never arrives at all.
 
 **Tunnelling.** The ball is integrated in substeps no longer than one radius, so
 no frame rate, however coarse, can put it through a paddle. A hit only counts on
@@ -299,9 +374,10 @@ the decorative animations in the other two games.
 | Move out of turn | `ok:false`, state untouched |
 | anime.js CDN down | no animations, everything else the same |
 | Puzzle generator exhausted | fallback position |
-| Tab hidden during Pong | timer takes over from rAF, ~quarter speed, never frozen |
+| Tab hidden during Pong | a worker heartbeat takes over from rAF and keeps full speed; a main-thread timer would be throttled to a crawl |
 | Agent never answers a `pong_read` | slow-motion ends after `thinkTimeoutMs`, full speed resumes |
 | Nothing comes at the agent | `pong_read` answers `event:'timeout'`, agent just calls again |
+| Round parked behind the ready modal | `pong_read` answers `waiting_for_start` every `startPollMs`, and the serve wakes a parked read |
 | Game switched with a `pong_read` parked | the waiter is settled; the browser also rejects the in-flight call, since the tool it was waiting on no longer exists |
 
 Reasons are written for the agent to read and correct from: `'out of bounds, x
@@ -325,12 +401,19 @@ demo:
   calls and confirm the final tool list is exactly the last game's tools plus
   the four core ones, with nothing left over from a call that landed mid-flight
   (this is what exposed the `switch_game` await bug above).
+- Pong, the ready gate: click the Pong tab in a duel and confirm nothing moves
+  until "Start rally" — then Escape out of the modal instead, and confirm the
+  acts row still has the button and the ball is still parked.
+- Pong, the briefing: call `pong_ready` from the inspector with the modal up and
+  watch the status line flip to "agent checked in".
 - Pong, the agent loop: `pong_read` must not answer while the ball is heading
   away; once it does, the court must visibly slow and say so; `pong_move` with
   the `intercept_y` it handed over must actually return the ball.
 - Pong, no spin: two `pong_read` calls without a `pong_move` between them — the
   second must block, not answer instantly off the same shot.
-- Pong, hidden tab: switch to another window mid-rally and come back. The ball
-  must have kept moving (slower), not frozen at the position you left it.
+- Pong, hidden tab: this is the demo's normal case, not an edge one — switch to
+  another window mid-rally, let the agent play a few shots blind, and come back.
+  The score must have moved on. A frozen ball here is the failure that reads as
+  "the agent isn't moving its paddle".
 - Pong, single player: no mention of an agent anywhere, and the left edge
   behaves as a wall rather than conceding points.

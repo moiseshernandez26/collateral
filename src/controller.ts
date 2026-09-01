@@ -1,20 +1,20 @@
 import { S } from './state';
 import type { GameId } from './types';
 import { RULES } from './rules-text';
-import { registerGameTools, getToolCount } from './tools/registry';
+import { registerGameTools } from './tools/registry';
 import { resetRoundMetrics, resetMatchMetrics } from './metrics';
-import { paintMetrics, clearLog } from './log';
+import { paintMetrics, clearLog, setToolCount } from './log';
 import { paintActs } from './acts';
-import { CORE } from './tools/core';
 import { MS, taken, flags, claimMode, flagMode, newBoard as msNewBoard } from './minesweeper/state';
 import { buildGrid as buildMsGrid, paintBoard as paintMsBoard } from './minesweeper/render';
 import { blank as c4Blank, msg as c4Msg } from './connect4/state';
 import { generatePuzzle } from './connect4/actions';
 import { buildGrid as buildC4Grid, paintBoard as paintC4Board } from './connect4/render';
-import { PONG, blank as pongBlank, rallies, thinking } from './pong/state';
+import { PONG, blank as pongBlank, rallies, thinking, awaitingStart } from './pong/state';
 import { startRound as pongStart } from './pong/actions';
 import { releaseWaiter } from './pong/agent';
 import { buildGrid as buildPongGrid, paintBoard as paintPongBoard, stopLoop as stopPongLoop } from './pong/render';
+import { showReady, hideReady } from './pong/ready';
 
 const GAME_TAG: Record<GameId, string> = { ms: 'minesweeper', c4: 'connect 4', pong: 'pong' };
 const SOLO_LABEL: Record<GameId, string> = { ms: 'games won', c4: 'puzzles solved', pong: 'best run' };
@@ -59,13 +59,19 @@ function paintTurn(): void {
   // Pong has no turns at all — both paddles are live the whole time — so the
   // turn box reports what the ball is doing instead of whose move it is.
   if (S.game === 'pong') {
+    if (S.duel && awaitingStart) {
+      t.className = 'turn h';
+      who.textContent = 'Ready?';
+      hint.textContent = 'the ball waits · press "Start rally"';
+      return;
+    }
     t.className = 'turn ' + (S.duel && thinking ? 'a' : 'h');
     who.textContent = S.duel ? (thinking ? 'Agent deciding' : 'Rally') : 'Pong';
     hint.textContent = S.duel
       ? thinking
         ? 'ball slowed while the tool call is out'
-        : 'move your paddle'
-      : 'keep it alive';
+        : 'move with ↑ / ↓'
+      : 'keep it alive · ↑ / ↓';
     return;
   }
   if (!S.duel) {
@@ -120,6 +126,7 @@ export async function startGame(id: GameId, keep: boolean): Promise<void> {
   if (S.game === 'pong') {
     stopPongLoop();
     releaseWaiter('not_active');
+    hideReady();
   }
 
   S.game = id;
@@ -160,9 +167,13 @@ export async function startGame(id: GameId, keep: boolean): Promise<void> {
     pongStart();
   }
 
-  await registerGameTools(id);
-  if (S.mcp) document.getElementById('pill')!.textContent = `${CORE.length + getToolCount(id)} tools active`;
+  const live = await registerGameTools(id);
+  if (S.mcp) setToolCount(live);
   paint();
+  // Last, and only for a duel: the ball is parked until the human says go, and
+  // the tools are already registered by now, so the agent can check in while
+  // the modal is still up.
+  if (id === 'pong' && S.duel) showReady();
 }
 
 document.getElementById('tabMs')!.addEventListener('click', () => startGame('ms', true));

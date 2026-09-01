@@ -195,8 +195,9 @@ sees that WebMCP is not limited to games that politely wait for the agent.
 ### Criteria
 
 1. THE SYSTEM SHALL simulate the ball continuously from wall-clock time, and SHALL
-   keep simulating while the tab is hidden, since the agent driving it may be in
-   another window.
+   keep simulating **at full speed** while the tab is hidden, since the agent
+   driving it is normally in another window. A clock the browser throttles in a
+   background tab does not satisfy this.
 2. THE SYSTEM SHALL prevent the ball from passing through a paddle at any frame
    rate, by advancing the simulation in steps no larger than the ball's radius.
 3. WHEN the agent calls the read tool THE SYSTEM SHALL NOT answer until the ball is
@@ -216,8 +217,25 @@ sees that WebMCP is not limited to games that politely wait for the agent.
    over, and SHALL clamp an out-of-range coordinate instead of rejecting it.
 10. WHILE in single player THE SYSTEM SHALL bounce the ball off the agent's edge as
     a wall and end the run when the player misses, recording the best run.
-11. THE SYSTEM SHALL let the player move the paddle with the pointer and with the
-    arrow keys.
+11. THE SYSTEM SHALL move the player's paddle with the arrow keys only, at a speed
+    proportional to how long the key is held, and SHALL NOT move it in response to
+    the pointer — an agent that drives the page with the mouse instead of the tools
+    would otherwise be playing the human's paddle.
+12. WHEN the window loses focus THE SYSTEM SHALL treat every held key as released,
+    so the paddle does not keep gliding on the keyup that never arrives.
+13. WHILE in a duel THE SYSTEM SHALL NOT serve the first ball of a round until the
+    player confirms, and SHALL say on screen that the round is waiting.
+14. THE SYSTEM SHALL offer a briefing tool that states which paddle is the agent's,
+    that only its move tool moves it, and how the read/move loop runs; and WHEN the
+    agent calls it THE SYSTEM SHALL show on screen that the agent has checked in.
+15. WHILE a round is waiting to be started THE SYSTEM SHALL answer a read with a
+    distinct event naming that reason, rather than leaving it parked for its full
+    timeout.
+16. WHEN the player starts the round THE SYSTEM SHALL wake a read that was already
+    parked, so the agent does not miss the first shot.
+17. THE SYSTEM SHALL end every Pong tool response with the next call the agent
+    should make, so that an agent which stops to report between shots is the
+    exception rather than the default.
 
 ## Requirement 10 — Call rail
 
@@ -229,6 +247,15 @@ sees that WebMCP is not limited to games that politely wait for the agent.
 3. WHERE the response has `ok:false` THE SYSTEM SHALL visually distinguish the
    entry from successful ones.
 4. THE SYSTEM SHALL truncate long responses so each entry fits in a few lines.
+5. WHILE tools are registered and no call has ever arrived THE SYSTEM SHALL say so
+   distinctly, rather than showing only that the tools are registered. Registering
+   tools and having an agent that calls them are different facts, and the API
+   offers no way to detect the second.
+6. WHEN the registered tool list changes THE SYSTEM SHALL log the list the browser
+   actually holds, so that an empty rail distinguishes "nothing registered" from
+   "nothing is calling".
+7. THE SYSTEM SHALL take the tool count it reports from the browser, not from its
+   own record of what it asked to register.
 
 ## Requirement 11 — Interface
 

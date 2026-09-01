@@ -1,5 +1,5 @@
 import { S } from '../state';
-import { PONG, ball, running, approachFired, setApproachFired, setThinking } from './state';
+import { PONG, ball, running, awaitingStart, approachFired, setApproachFired, setThinking } from './state';
 import { snapshot, type Snapshot } from './query';
 
 // ---------------------------------------------------------------------------
@@ -42,9 +42,15 @@ export function awaitApproach(): Promise<Snapshot> {
   }
   settle('superseded'); // a second read replaces the first, never stacks
   return new Promise<Snapshot>((resolve) => {
+    // One wait, whatever it is waiting for. A read placed before the human
+    // presses "Start rally" parks right through it and is woken by the serve,
+    // so the agent crosses the start of the round inside a single call — every
+    // early answer is another chance for it to leave the loop and report back
+    // to its user, and a paddle whose agent has wandered off stands still.
+    // `event` still says which kind of wait ran out.
     const timer = setTimeout(() => {
       waiter = null;
-      resolve(snapshot('timeout'));
+      resolve(snapshot(awaitingStart ? 'waiting_for_start' : 'timeout'));
     }, PONG.readTimeoutMs);
     waiter = { resolve, timer };
   });

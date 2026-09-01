@@ -39,7 +39,13 @@ What's checked off is already in the working prototype.
 - [x] 3b.4 One approach handed over at most once, so the loop can't spin — _R14.5_
 - [x] 3b.5 Paddle move: clamped, rejected in solo and after the round — _R14.9_
 - [x] 3b.6 Single-player survival off the left wall, best run kept — _R14.10_
-- [x] 3b.7 Pointer and arrow-key control — _R14.11, R11.5_
+- [x] 3b.7 Arrow-key paddle control, no pointer, released on blur — _R14.11, R14.12, R11.5_
+- [x] 3b.8 Ready gate: a duel round waits for the human before the first serve — _R14.13, R14.15, R14.16_
+- [x] 3b.9 `pong_ready` briefing tool, with the check-in shown on screen — _R14.14_
+- [x] 3b.10 `next_action` on every response, so the agent stays in the loop — _R14.17_
+- [x] 3b.11 Worker heartbeat, so a hidden tab keeps full speed — _R14.1_
+- [x] 7.4 Pill and empty rail distinguish "registered" from "an agent is calling" — _R10.5_
+- [x] 7.5 Rail logs the tool list the browser actually holds, on every change — _R10.6, R10.7_
 
 ## Phase 4 — Deduction aids
 

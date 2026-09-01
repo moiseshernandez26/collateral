@@ -20,14 +20,19 @@ export const RULES: Record<string, string> = {
     <li>Solving it moves you to the next puzzle.</li></ul>`,
   pong_duel: `Real-time, not turn-based. You are the <b>red</b> paddle on the right,
     the agent is the <b>blue</b> one on the left. First to 5 points wins the round.
-    <ul><li>Move the mouse over the court, or focus it and use ↑ / ↓.</li>
+    <b>Nothing moves until you press "Start rally"</b>, so the agent has time to call
+    <code>pong_ready</code> and find out which paddle is its own.
+    <ul><li>Move your paddle with the <b>↑</b> and <b>↓</b> arrow keys — hold <b>Shift</b>
+    for fine control. The mouse does nothing here, by design.</li>
+    <li>The agent plays only through its tools; it never touches the page.</li>
     <li>The agent can't watch every frame, so <code>pong_read</code> waits until the
     ball turns toward it and then hands it the exact interception point.</li>
     <li><b>While the agent decides, the ball slows to a crawl</b> — that pause is
     a round-trip to the agent, made visible.</li></ul>`,
   pong_solo: `Keep the ball alive. It bounces off the top, bottom, and left walls;
     you defend the right.
-    <ul><li>Move the mouse over the court, or focus it and use ↑ / ↓.</li>
+    <ul><li>Move your paddle with the <b>↑</b> and <b>↓</b> arrow keys — hold <b>Shift</b>
+    for fine control.</li>
     <li>Every return speeds the ball up a little.</li>
     <li>Miss it once and the run ends — your best run is kept.</li></ul>`,
 };

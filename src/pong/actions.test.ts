@@ -1,7 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { S } from '../state';
-import { PONG, ball, paddle, rallies, running, thinking, agentFace, humanFace, blank, serve, setPaddle } from './state';
-import { step, moveAgentPaddle, moveHumanPaddle } from './actions';
+import {
+  PONG,
+  ball,
+  paddle,
+  rallies,
+  running,
+  thinking,
+  awaitingStart,
+  agentFace,
+  humanFace,
+  blank,
+  serve,
+  setPaddle,
+} from './state';
+import { step, moveAgentPaddle, moveHumanPaddle, driveHumanPaddle, startRound, beginRally } from './actions';
 import { awaitApproach, releaseWaiter } from './agent';
 
 beforeEach(() => {
@@ -145,6 +158,78 @@ describe('single player', () => {
   });
 });
 
+describe('the ready gate', () => {
+  it('does not serve a duel round on its own', () => {
+    startRound();
+    expect(awaitingStart).toBe(true);
+    expect(running).toBe(false);
+    run(1000);
+    expect(ball.x).toBe(PONG.w / 2); // the ball has not moved at all
+  });
+
+  it('serves at the agent once the human starts the rally', () => {
+    startRound();
+    beginRally();
+    expect(awaitingStart).toBe(false);
+    expect(running).toBe(true);
+    expect(ball.vx).toBeLessThan(0);
+  });
+
+  it('ignores a second start, so a double click cannot re-serve a live rally', () => {
+    startRound();
+    beginRally();
+    run(200);
+    const moved = { ...ball };
+    beginRally();
+    expect(ball.x).toBe(moved.x);
+    expect(ball.y).toBe(moved.y);
+  });
+
+  it('serves single player straight away — there is no agent to wait for', () => {
+    S.duel = false;
+    startRound();
+    expect(awaitingStart).toBe(false);
+    expect(running).toBe(true);
+  });
+
+  // It waits the full read timeout rather than answering early: every early
+  // answer is a chance for the agent to leave the loop and report back, and an
+  // agent that has wandered off leaves its paddle standing still.
+  it('parks a read through the wait, then names the reason it gave up', async () => {
+    vi.useFakeTimers();
+    try {
+      startRound();
+      const pending = awaitApproach();
+      let settled = false;
+      void pending.then(() => (settled = true));
+      vi.advanceTimersByTime(PONG.readTimeoutMs - 100);
+      await Promise.resolve();
+      expect(settled).toBe(false);
+      vi.advanceTimersByTime(200);
+      const snap = await pending;
+      expect(snap.event).toBe('waiting_for_start');
+      expect(snap.waiting_for_start).toBe(true);
+      expect(snap.next_action).toMatch(/pong_read again/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // The point of the gate: a read placed before the human starts still catches
+  // the very first shot, rather than timing out and missing it.
+  it('wakes a read that was already parked when the rally begins', async () => {
+    startRound();
+    const pending = awaitApproach();
+    let settled = false;
+    void pending.then(() => (settled = true));
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    beginRally();
+    run(600);
+    expect((await pending).event).toBe('approaching');
+  });
+});
+
 describe('moveAgentPaddle', () => {
   it('clamps the paddle inside the court and says so', () => {
     serve(-1);
@@ -156,7 +241,21 @@ describe('moveAgentPaddle', () => {
 
   it('rejects a non-numeric y', () => {
     serve(-1);
-    expect(moveAgentPaddle('middle')).toMatchObject({ ok: false, reason: 'y must be a finite number' });
+    expect(moveAgentPaddle('middle')).toMatchObject({ ok: false });
+  });
+
+  // Rejecting "106.8" would enforce a JSON typing rule, not a rule of the game,
+  // and it would cost the agent the shot.
+  it('accepts a number that arrived quoted', () => {
+    serve(-1);
+    expect(moveAgentPaddle('106.8')).toMatchObject({ ok: true, paddle_y: 106.8, clamped: false });
+  });
+
+  it('tells the agent to go straight back to reading', () => {
+    serve(-1);
+    const r = moveAgentPaddle(150) as { event: string; next_action: string };
+    expect(r.event).toBe('moved');
+    expect(r.next_action).toMatch(/pong_read/);
   });
 
   it('rejects a move in single player, where the agent has no paddle', () => {
@@ -275,6 +374,52 @@ describe('moveHumanPaddle', () => {
   it('clamps to the court like the agent tool does', () => {
     moveHumanPaddle(10_000);
     expect(paddle.human).toBe(PONG.h - PONG.paddleH / 2);
+  });
+});
+
+describe('driveHumanPaddle', () => {
+  it('moves by the elapsed time, not by a fixed jump per key press', () => {
+    const from = paddle.human;
+    driveHumanPaddle(-1, 100);
+    expect(paddle.human).toBeCloseTo(from - PONG.paddleSpeed * 0.1, 5);
+    driveHumanPaddle(1, 50);
+    expect(paddle.human).toBeCloseTo(from - PONG.paddleSpeed * 0.05, 5);
+  });
+
+  it('crawls when the fine-control modifier is held', () => {
+    const from = paddle.human;
+    driveHumanPaddle(1, 100, true);
+    expect(paddle.human).toBeCloseTo(from + PONG.paddleFine * 0.1, 5);
+  });
+
+  it('stays inside the court however long the key is held', () => {
+    for (let i = 0; i < 60; i++) driveHumanPaddle(-1, 16);
+    expect(paddle.human).toBe(PONG.paddleH / 2);
+    for (let i = 0; i < 60; i++) driveHumanPaddle(1, 16);
+    expect(paddle.human).toBe(PONG.h - PONG.paddleH / 2);
+  });
+
+  // A tab that was hidden for a minute must not teleport the paddle when it
+  // comes back; the same cap `step` uses applies here.
+  it('caps a single huge tick instead of jumping the whole elapsed time', () => {
+    const from = paddle.human;
+    driveHumanPaddle(1, 60_000);
+    expect(paddle.human).toBeCloseTo(from + (PONG.paddleSpeed * PONG.maxTickMs) / 1000, 5);
+  });
+
+  it('does nothing with no direction held, or once the round is over', () => {
+    const from = paddle.human;
+    driveHumanPaddle(0, 100);
+    expect(paddle.human).toBe(from);
+    S.over = true;
+    driveHumanPaddle(1, 100);
+    expect(paddle.human).toBe(from);
+  });
+
+  // The paddle has to be able to chase the ball, or a shot aimed at a corner
+  // would be unreturnable no matter how well the human plays.
+  it('outruns the ball vertically', () => {
+    expect(PONG.paddleSpeed).toBeGreaterThan(PONG.baseSpeed);
   });
 });
 
