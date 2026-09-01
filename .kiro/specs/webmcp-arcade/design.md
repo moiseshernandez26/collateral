@@ -251,12 +251,32 @@ rally itself, inside a single message turn. The tool description spells the loop
 out explicitly, because that is where agent behaviour is actually specified:
 read, move, read again, stop on `round_over`.
 
-**Buying time.** From the moment a read is answered until `pong_move` lands, the
-ball runs at 12% speed. That window is the agent's round-trip made visible: the
-court draws "agent thinking · ball slowed" and a dashed line to where the ball
-is going, so the room can see the agent was handed the answer and judge what it
-did with it. A `thinkTimeoutMs` ends the window if the agent never answers, so a
-stalled agent leaves the game slow-but-playable rather than frozen.
+**Buying time.** The ball runs at 12% speed for as long as the shot belongs to
+the agent. That window is the agent's round-trip made visible: the court draws
+"agent thinking · ball slowed" and a dashed line to where the ball is going, so
+the room can see the agent was handed the answer and judge what it did with it.
+A `thinkTimeoutMs` ends the window if the agent never answers, so a stalled agent
+leaves the game slow-but-playable rather than frozen.
+
+**The ball waits for the agent to *ask*, not only to answer.** This is the fix
+for the trigger that "sometimes didn't fire". Slow motion originally began when a
+read was answered — which covers only half of the agent's cycle. The other half
+is the client round-tripping back *into* `pong_read`, and that ran at full speed.
+With a slow enough gap between `pong_move` and the next read, an entire shot
+could turn, cross the wake line, arrive and bounce inside that gap: no read was
+parked to be woken, nothing was announced, and from the outside the trigger had
+simply failed. `loop.test.ts` reproduces it at a 3s think and a 3s gap, and the
+same file now proves it fixed across a sweep of think/gap combinations, with a
+human that misses and re-serves.
+
+So `holdForAgent()` slows the ball the moment a shot turns on the agent and
+nobody is listening yet, and it keeps crawling until the agent asks. The whole
+premise of this game is that the ball waits for the agent; it should wait for the
+whole round-trip, not for the convenient half. Two guards on it: it only applies
+in a duel where the agent has actually checked in (`agentReady`), so single
+player is untouched and a duel with nothing attached doesn't freeze; and
+`holdSpent` stops the same shot re-arming the hold after its timeout, which would
+otherwise crawl forever waiting for an agent that is never coming back.
 
 **One shot, one answer.** `approachFired` means *this shot has been handed to the
 agent*, not *this shot started*. Both halves matter, and each was a real bug

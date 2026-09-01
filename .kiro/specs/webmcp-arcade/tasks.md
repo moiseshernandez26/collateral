@@ -44,6 +44,7 @@ What's checked off is already in the working prototype.
 - [x] 3b.9 `pong_ready` briefing tool, with the check-in shown on screen — _R14.14_
 - [x] 3b.10 `next_action` on every response, so the agent stays in the loop — _R14.17_
 - [x] 3b.11 Worker heartbeat, so a hidden tab keeps full speed — _R14.1_
+- [x] 3b.12 Ball waits for the agent to ask, not only to answer — _R14.4, R14.6_
 - [x] 7.4 Pill and empty rail distinguish "registered" from "an agent is calling" — _R10.5_
 - [x] 7.5 Rail logs the tool list the browser actually holds, on every change — _R10.6, R10.7_
 - [x] 7.6 Board clicks on the agent's turn are refused out loud, not swallowed — _R4.4_

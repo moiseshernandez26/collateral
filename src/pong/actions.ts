@@ -15,13 +15,14 @@ import {
   setRunning,
   setThinking,
   setApproachFired,
+  setHoldSpent,
   setAwaitingStart,
   awaitingStart,
   addRally,
   serve,
 } from './state';
 import { snapshot } from './query';
-import { tryDeliver, releaseWaiter } from './agent';
+import { tryDeliver, releaseWaiter, holdForAgent } from './agent';
 
 export function moveAgentPaddle(y: unknown): ToolResult {
   if (S.game !== 'pong') return { ok: false, reason: 'pong is not the active game, call switch_game first' };
@@ -93,7 +94,13 @@ function point(who: Player): void {
  */
 export function step(dtMs: number): boolean {
   if (!running || S.over) return false;
-  if (thinking && now() - thinkingSince > PONG.thinkTimeoutMs) setThinking(false);
+  if (thinking && now() - thinkingSince > PONG.thinkTimeoutMs) {
+    setThinking(false);
+    // Whichever kind of wait just ran out, this shot doesn't get another one:
+    // otherwise `holdForAgent` re-arms on the next tick and the ball crawls
+    // forever waiting for an agent that isn't coming back.
+    setHoldSpent(true);
+  }
 
   // Substepping below makes any dt safe from tunnelling, so this cap is only
   // about not simulating minutes of catch-up after a long hidden stretch.
@@ -143,12 +150,18 @@ export function step(dtMs: number): boolean {
       ball.vx = Math.abs(ball.vx);
     }
 
-    if (ball.vx > 0) setApproachFired(false);
-    else if (tryDeliver()) {
+    if (ball.vx > 0) {
+      setApproachFired(false);
+      setHoldSpent(false);
+    } else if (tryDeliver()) {
       // Stop here rather than burning the rest of this tick at full speed: on
       // a coarse tick (a hidden tab falls back to ~1s timers) the ball could
       // otherwise fly past the paddle in the very tick that woke the agent.
       break;
+    } else {
+      // Nothing was listening when this shot turned. Slow the ball anyway and
+      // let it wait for the agent to come back and ask — see holdForAgent().
+      holdForAgent();
     }
   }
   return false;

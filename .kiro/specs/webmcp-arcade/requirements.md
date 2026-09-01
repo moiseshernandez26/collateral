@@ -206,12 +206,17 @@ sees that WebMCP is not limited to games that politely wait for the agent.
 3. WHEN the agent calls the read tool THE SYSTEM SHALL NOT answer until the ball is
    travelling toward the agent's paddle, and SHALL then return the interception
    point.
-4. WHILE a read has been answered and the agent has not yet moved THE SYSTEM SHALL
-   slow the ball, so that one agent round-trip fits inside a rally.
+4. WHILE a shot belongs to the agent — from the moment it turns toward the agent
+   until the agent has moved — THE SYSTEM SHALL slow the ball, so that a whole
+   agent round-trip fits inside a rally, including the part where the agent is on
+   its way back to asking. Slowing only from the answer leaves shots that arrive
+   inside the gap between a move and the next read, and those look like the wake
+   never fired.
 5. THE SYSTEM SHALL hand any one approach to the agent at most once, so that a
    read/move loop cannot spin against a single shot.
-6. IF the agent never moves after being handed an approach THEN THE SYSTEM SHALL
-   return to full speed after a bounded wait rather than staying slowed forever.
+6. IF the agent never moves after being handed an approach, or never asks at all,
+   THEN THE SYSTEM SHALL return to full speed after a bounded wait and SHALL NOT
+   re-slow the same shot, rather than staying slowed forever.
 7. IF nothing comes at the agent within a bounded wait THEN THE SYSTEM SHALL answer
    the read with a timeout event rather than leaving the call hanging.
 8. WHEN the round ends or the game is switched away THE SYSTEM SHALL settle any

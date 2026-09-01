@@ -172,6 +172,14 @@ agent attached). That call is also where the agent is told, in one piece, that i
 is the blue paddle on the left; `you_are` then rides on every response. All of it
 exists because an agent walked into a live rally not knowing it had a paddle.
 
+**The ball waits for the agent to ask, not just to answer** (`holdForAgent()`).
+Slow motion covers the whole round-trip: it starts when the shot turns toward the
+agent, not when a read is answered. Without that, a shot could turn, arrive and
+bounce entirely inside the gap between the agent's `pong_move` and its next
+`pong_read` — nothing parked to wake, so the trigger looked broken. `loop.test.ts`
+drives the full read/move loop at a sweep of latencies and is the regression test
+for it; if you change the wake logic, run that file first.
+
 **Pong's ball is slow on purpose.** `baseSpeed` 180 / `maxSpeed` 380 are not
 playability numbers, they are round-trip numbers: from the wake line to the
 agent's paddle is ~10 s of real time in slow motion, which is several model
@@ -203,6 +211,12 @@ in a `beforeEach` — the board and `S` are module-level singletons, not
 recreated per test. Pong's engine is testable for the same reason: `step(dt)`
 takes the elapsed time as an argument instead of reading a clock, so a test
 drives it in slices exactly the way the render loop does.
+
+`pong/loop.test.ts` is the exception to the one-mechanism-per-test rule, on
+purpose: it drives the entire read → think → move → read cycle over thousands of
+simulated ticks at a sweep of agent latencies. The bugs it exists to catch are
+properties of the *sequence* — a shot nobody was awake for — and every one of
+them passed the per-mechanism tests before it was found.
 
 `controller.ts` is the orchestrator: `paint()` (repaints scoreboard, turn, acts)
 and `startGame()` (starts/resets a game, registers its tools). `acts.ts` holds

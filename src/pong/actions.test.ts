@@ -13,6 +13,7 @@ import {
   blank,
   serve,
   setPaddle,
+  setAgentReady,
 } from './state';
 import { step, moveAgentPaddle, moveHumanPaddle, driveHumanPaddle, startRound, beginRally } from './actions';
 import { awaitApproach, releaseWaiter } from './agent';
@@ -268,6 +269,54 @@ describe('the agent time budget', () => {
     }
     // At full speed, the run-up from the wake line is still over a second.
     expect(ms / 1000).toBeGreaterThan(1.2);
+  });
+});
+
+// Slowing the ball for an agent that hasn't asked yet is what makes the wake
+// reliable, and it is also the change most likely to leak somewhere it doesn't
+// belong. These two are the guards on that.
+describe('holding the ball for an agent that has not asked yet', () => {
+  it('slows the ball once the shot turns, before any read is parked', () => {
+    setAgentReady(true);
+    serve(-1);
+    ball.x = PONG.w * PONG.approachAt - 1;
+    ball.vx = -PONG.baseSpeed;
+    ball.vy = 0;
+    step(16);
+    expect(thinking).toBe(true); // nobody asked, and the ball is already waiting
+  });
+
+  it('never slows the ball in single player, where there is no agent to wait for', () => {
+    S.duel = false;
+    serve(-1);
+    ball.x = PONG.w * PONG.approachAt - 1;
+    ball.vx = -PONG.baseSpeed;
+    const before = ball.x;
+    step(100);
+    expect(thinking).toBe(false);
+    expect(before - ball.x).toBeCloseTo(PONG.baseSpeed * 0.1, 0); // full speed
+  });
+
+  it('gives up after the think timeout and does not re-arm for the same shot', () => {
+    vi.useFakeTimers();
+    try {
+      setAgentReady(true);
+      serve(-1);
+      ball.x = PONG.w * PONG.approachAt - 1;
+      ball.vx = -PONG.baseSpeed;
+      ball.vy = 0;
+      step(16);
+      expect(thinking).toBe(true);
+
+      vi.advanceTimersByTime(PONG.thinkTimeoutMs + 100);
+      vi.setSystemTime(Date.now() + PONG.thinkTimeoutMs + 100);
+      step(16);
+      expect(thinking).toBe(false); // budget spent
+      step(16);
+      expect(thinking).toBe(false); // and it stays spent, no crawl forever
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

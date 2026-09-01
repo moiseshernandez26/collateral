@@ -68,6 +68,10 @@ export let agentReady = false; // the agent has called pong_ready and checked in
 export let thinking = false; // a pong_read resolved and no pong_move has landed yet
 export let thinkingSince = 0;
 export let approachFired = false; // the agent has already been woken for this approach
+// This shot has already spent its "wait for the agent to ask" budget, so the
+// hold is not re-armed for it. Without this a timed-out hold re-arms on the
+// next tick and the ball crawls forever with nobody coming.
+export let holdSpent = false;
 
 export const now = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -90,6 +94,10 @@ export function setApproachFired(v: boolean): void {
   approachFired = v;
 }
 
+export function setHoldSpent(v: boolean): void {
+  holdSpent = v;
+}
+
 export function setAwaitingStart(v: boolean): void {
   awaitingStart = v;
 }
@@ -110,6 +118,7 @@ export function blank(): void {
   thinking = false;
   thinkingSince = 0;
   approachFired = false;
+  holdSpent = false;
   awaitingStart = false;
   agentReady = false;
 }
@@ -122,6 +131,7 @@ export function serve(toward: -1 | 1): void {
   ball.vx = toward * PONG.baseSpeed * Math.cos(angle);
   ball.vy = PONG.baseSpeed * Math.sin(angle);
   approachFired = false;
+  holdSpent = false;
   thinking = false;
   thinkingSince = 0;
   running = true;

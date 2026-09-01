@@ -1,5 +1,16 @@
 import { S } from '../state';
-import { PONG, ball, running, awaitingStart, approachFired, setApproachFired, setThinking } from './state';
+import {
+  PONG,
+  ball,
+  running,
+  awaitingStart,
+  agentReady,
+  thinking,
+  holdSpent,
+  approachFired,
+  setApproachFired,
+  setThinking,
+} from './state';
 import { snapshot, type Snapshot } from './query';
 
 // ---------------------------------------------------------------------------
@@ -15,8 +26,31 @@ import { snapshot, type Snapshot } from './query';
 
 let waiter: { resolve: (v: Snapshot) => void; timer: ReturnType<typeof setTimeout> } | null = null;
 
-function isApproaching(): boolean {
+export function isApproaching(): boolean {
   return running && !S.over && ball.vx < 0 && ball.x <= PONG.w * PONG.approachAt;
+}
+
+/**
+ * The ball has turned on the agent and nothing is listening yet, so slow it
+ * down anyway and let it wait for the agent to *ask*.
+ *
+ * This closes the hole that made the trigger look unreliable. Slow motion used
+ * to cover only half of the agent's cycle — from the wake to `pong_move` — while
+ * the other half, the client round-tripping back into `pong_read`, ran at full
+ * speed. An agent with a slow enough gap between its move and its next read
+ * would have a whole shot arrive and bounce inside that gap: no read was parked
+ * when the ball crossed the wake line, so nothing was announced, and from the
+ * outside the trigger simply "didn't fire". Reproduced in loop.test.ts at a
+ * 3s think and a 3s gap.
+ *
+ * The premise of this game is that the ball waits for the agent. It should
+ * therefore wait for the whole round-trip, not for the convenient half.
+ */
+export function holdForAgent(): void {
+  if (!S.duel || !agentReady || thinking || holdSpent) return;
+  if (approachFired || waiter) return; // already handed over, or about to be
+  if (!isApproaching()) return;
+  setThinking(true);
 }
 
 function settle(event: string): void {
