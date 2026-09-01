@@ -117,6 +117,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .ev .t{float:right;color:var(--soft);font-size:9.5px}
 .ev .r{display:block;color:var(--soft);margin-top:2px;word-break:break-word}
 .ev.rej .n{color:var(--human)}
+.turn .hint.warn{color:#fff;background:var(--human);padding:2px 7px;font-weight:700}
 .blank{padding:15px;font-family:var(--mono);font-size:11px;color:var(--soft);line-height:1.7}
 .blank code{background:#DDE1DA;padding:1px 4px}
 

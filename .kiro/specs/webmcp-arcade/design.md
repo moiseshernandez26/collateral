@@ -122,6 +122,18 @@ Wraps **only** the write tools. Read tools always pass through: the agent
 thinking outside its turn bothers no one, and it arrives ready when its turn
 comes.
 
+The guard has a mirror on the pointer side. An agent whose client doesn't expose
+the tools falls back on what it always has — screenshot, click, screenshot — and
+on the agent's turn the board used to swallow those clicks and say nothing,
+which is the worst available answer: the agent gets no signal, screenshots
+again, and the room watches a game go nowhere for reasons nobody can see. Now
+`refuseHandPlay()` puts the refusal in the turn box and in the rail ("click
+ignored — the board is not clickable on the agent's turn; it has to call a
+tool"). `get_match`, the tool an agent calls first, says the same thing outright.
+The page can't force a client to use WebMCP, but it can decline to be played by
+hand and make the decline the demo's own material — which is more useful in a
+room than a smooth game would have been.
+
 Pong does not use `guard()` at all — it has no turns to be out of, and the
 agent's paddle is its own the whole time. The rules it *can* break (moving in
 single player, moving after the round is over, sending a non-number) are

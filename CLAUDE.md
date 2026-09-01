@@ -154,6 +154,13 @@ ball — so `pong_read` never had a shot to hand over and the agent's paddle sto
 still all round. rAF still drives the visible case. Don't put the heartbeat back
 on `setInterval`.
 
+**The board refuses to be played by hand, and says so.** A click during the
+agent's turn used to `return` silently; `refuseHandPlay()` now flashes the turn
+box and leaves a rejected line in the rail, and `get_match` says the same in its
+description. An agent whose client doesn't expose the tools falls back on
+screenshot-and-click, and a silent swallow leaves both the agent and the room
+with no idea why nothing is happening. Don't turn it back into a bare `return`.
+
 **Every Pong response ends with `next_action`**, naming the call the agent should
 make next. Without it the agent answers one read, writes its user a progress
 report, and the rally ends with its paddle parked. Keep it on every response.

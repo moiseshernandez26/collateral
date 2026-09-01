@@ -46,6 +46,7 @@ What's checked off is already in the working prototype.
 - [x] 3b.11 Worker heartbeat, so a hidden tab keeps full speed — _R14.1_
 - [x] 7.4 Pill and empty rail distinguish "registered" from "an agent is calling" — _R10.5_
 - [x] 7.5 Rail logs the tool list the browser actually holds, on every change — _R10.6, R10.7_
+- [x] 7.6 Board clicks on the agent's turn are refused out loud, not swallowed — _R4.4_
 
 ## Phase 4 — Deduction aids
 

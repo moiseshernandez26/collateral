@@ -6,7 +6,8 @@ export const CORE: ToolDef[] = [
   {
     name: 'get_match',
     description:
-      "Returns which minigame you're in, whose turn it is, the round points, and the rounds won. Call it first to check if it's your turn.",
+      "Returns which minigame you're in, whose turn it is, the round points, and the rounds won. Call it first to check if it's your turn. " +
+      'THESE TOOLS ARE THE ONLY WAY YOU CAN PLAY THIS PAGE. Do not screenshot it, click it, or drive it with the mouse or keyboard: the board ignores clicks on your turn and refuses them out loud, and any input you do land plays the HUMAN\'s side, not yours. Every move you make is a tool call.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true },
     run: () => ({

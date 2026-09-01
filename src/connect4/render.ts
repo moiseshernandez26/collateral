@@ -1,5 +1,6 @@
 import { S } from '../state';
 import { paint } from '../controller';
+import { refuseHandPlay } from '../log';
 import { C4, cells, winLine } from './state';
 import { drop, soloTry } from './actions';
 
@@ -17,7 +18,7 @@ export function buildGrid(): void {
       b.addEventListener('click', () => {
         if (S.game !== 'c4' || S.over) return;
         if (S.duel) {
-          if (S.turn !== 'human') return;
+          if (S.turn !== 'human') return refuseHandPlay();
           const { drop: at } = drop(x, 'human');
           paint({ drop: at });
         } else {

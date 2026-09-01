@@ -75,8 +75,11 @@ that the agent can't cheat.
    SHALL return `{ ok:false, reason:"it's not your turn..." }` without changing state.
 3. IF an action tool is invoked with the round already over THEN THE SYSTEM SHALL
    reject it without changing state.
-4. WHILE it is the agent's turn THE SYSTEM SHALL ignore the human's clicks on the
-   board.
+4. WHILE it is the agent's turn THE SYSTEM SHALL refuse clicks on the board, and
+   SHALL say so on screen and in the call rail rather than ignoring them
+   silently. An agent playing by screenshot-and-click has to be told that the
+   click did nothing, or it just screenshots again and the room watches a game
+   go nowhere.
 5. THE SYSTEM SHALL always allow read-only tools, regardless of whose turn it is.
 
 ## Requirement 5 — Minesweeper duel

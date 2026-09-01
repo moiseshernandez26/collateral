@@ -1,5 +1,6 @@
 import { S } from '../state';
 import { paint } from '../controller';
+import { refuseHandPlay } from '../log';
 import { MS, mines, opened, taken, flags, lost, claimMode, flagMode, count, setClaimMode } from './state';
 import { reveal, claim, soloReveal, soloFlag } from './actions';
 
@@ -17,7 +18,7 @@ export function buildGrid(): void {
       b.addEventListener('click', () => {
         if (S.game !== 'ms' || S.over) return;
         if (S.duel) {
-          if (S.turn !== 'human') return;
+          if (S.turn !== 'human') return refuseHandPlay();
           if (claimMode) {
             setClaimMode(false);
             claim(x, y, 'human');

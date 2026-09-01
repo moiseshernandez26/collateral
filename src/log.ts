@@ -50,6 +50,40 @@ export function clearLog(): void {
 }
 
 /**
+ * Something clicked the board while it was the agent's turn. That used to
+ * return silently, which is the worst possible response: an agent playing by
+ * screenshot-and-click gets no signal that its click did nothing, so it takes
+ * another screenshot and tries again, and the room watches a game go nowhere
+ * with no explanation. Now the refusal is loud — in the rail, and in the turn
+ * box — because "the agent must use its tools" is the whole point of the demo,
+ * and a rejected click makes it better material than a smooth one.
+ */
+export function refuseHandPlay(): void {
+  const box = document.getElementById('log')!;
+  const el = document.createElement('div');
+  el.className = 'ev rej sys';
+  el.innerHTML =
+    `<span class="t">${new Date().toLocaleTimeString('en-US', { hour12: false })}</span>` +
+    '<span class="n">click ignored</span>' +
+    '<span class="r">the board is not clickable on the agent\'s turn — it has to call a tool</span>';
+  box.prepend(el);
+  trim(box);
+
+  const hint = document.getElementById('turnHint')!;
+  hint.textContent = 'clicking does nothing here — the agent must call a tool';
+  hint.classList.add('warn');
+  clearTimeout(hintTimer);
+  hintTimer = window.setTimeout(() => {
+    hint.classList.remove('warn');
+    // Restored by hand rather than by calling paint(): this only ever fires on
+    // the agent's turn in a duel, so there is exactly one string to go back to.
+    hint.textContent = 'waiting on its tool call…';
+  }, 2600);
+}
+
+let hintTimer = 0;
+
+/**
  * A registration line, not a call. Deliberately styled apart from the agent's
  * calls: it says the browser is holding these tools right now, which is the
  * half of the story an empty rail otherwise leaves ambiguous.
