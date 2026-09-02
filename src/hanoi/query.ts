@@ -2,6 +2,8 @@ import { S, other } from '../state';
 import type { Player } from '../types';
 import { HANOI, OPTIMAL, peg, moves, legalMoves, elapsedFor, solved, startedAt, fmt } from './state';
 
+const plural = (n: number): string => `${n} move${n === 1 ? '' : 's'}`;
+
 export interface Snapshot {
   your_pegs: number[][];
   moves_made: number;
@@ -47,7 +49,7 @@ export function movesText(who: Player): string {
   return [
     `pegs (bottom to top), you are solving your own tower: ${peg[who].map((p, i) => `${i}:[${p.join(' ')}]`).join('  ')}`,
     `legal moves right now: ${legal.map((m) => `${m.from}->${m.to}`).join(', ')}`,
-    `you have made ${moves[who]} moves; ${OPTIMAL} is optimal for ${HANOI.discs} discs`,
+    `you have made ${plural(moves[who])}; ${OPTIMAL} is optimal for ${HANOI.discs} discs`,
     'these are the legal moves, not the good ones — which one to play is yours to work out',
   ].join('\n');
 }
@@ -66,7 +68,7 @@ export function boardText(who: Player): string {
     ...rows,
     '   peg 0 peg 1 peg 2',
     `moves ${moves[who]} · optimal ${OPTIMAL} · clock ${fmt(elapsedFor(who))}${startedAt === null ? ' (not started)' : ''}`,
-    S.duel ? `the human is on ${moves[other(who)]} moves` : '',
+    S.duel ? `the human has made ${plural(moves[other(who)])}` : '',
   ]
     .filter(Boolean)
     .join('\n');
