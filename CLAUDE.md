@@ -7,9 +7,10 @@ Guide for any agent working in this repo. Read it in full before touching code.
 A minigame arcade in the browser where the opponent is an **external agent**
 playing by calling WebMCP tools. Four games, each making a different point:
 a minesweeper duel and Connect 4 are turn-based; Pong is real-time, to show that
-WebMCP isn't limited to games that wait politely for the agent; and Battleship is
-the one where the two sides hold different information, so the page is what
-decides what the agent may know.
+WebMCP isn't limited to games that wait politely for the agent; and Hanoi is a
+race against one clock, which is where the room sees what an agent's move
+actually costs — a round-trip each — and what it buys, which is knowing the
+algorithm.
 
 ## The real goal
 
@@ -142,15 +143,21 @@ its single waiter), `ready.ts` (the "ready?" gate before the first serve), and
 `clock.ts` (the worker heartbeat that keeps a hidden tab running).
 
 `hud.ts` holds the turn box and the round line, split out of `controller.ts` when
-Battleship pushed it past the line limit. Controller keeps `paint()` and
+a fourth game pushed it past the line limit. Controller keeps `paint()` and
 `startGame()`; `hud.ts` and `acts.ts` keep the text and the buttons.
 
-**Battleship's information boundary is structural, not a promise.** Every tool
-answer is built from `battleship/query.ts`'s `knownGrid(who)`, which walks only
-the cells that side has already fired at — there is no path from a tool to the
-opponent's `ships` array that skips a shot. Don't add one, and don't "optimise"
-a tool by reading `side[foe].ships` directly. The tests in
-`battleship/query.test.ts` exist to catch exactly that.
+**Hanoi's aid stops at legal and never reaches good.** `hanoi_moves` returns the
+legal moves and says outright that they are not the good ones. The optimal move
+is a four-line recursion, so a tool that returned it would leave the agent
+nothing to do but transcribe and the race would demonstrate nothing. Don't
+"improve" that tool into a solver. Five discs is load-bearing for the same
+reason: below it the race is decided by clicking speed, at five it is decided by
+knowing the recursion.
+
+**Hanoi's clock is a timestamp, not a tally.** `elapsed()` subtracts
+`startedAt` from now, so a throttled background tab can stutter the display and
+never slow the race. Same lesson as Pong's worker heartbeat, solved by making
+the value independent of how often anything runs.
 
 **Pong bends two of those rules on purpose**, and neither should be "tidied up":
 it renders to a canvas on its own wall-clock loop instead of being repainted by

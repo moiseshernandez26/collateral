@@ -27,7 +27,7 @@ beforeEach(() => {
   S.turn = 'human';
   S.round = { human: 0, agent: 0 };
   S.series = { human: 0, agent: 0 };
-  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0, bsBest: 0 };
+  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0, hanoiBest: 0 };
 });
 
 // Drives the simulation in small slices, the way the rAF loop does.

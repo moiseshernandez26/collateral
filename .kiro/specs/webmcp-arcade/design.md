@@ -38,7 +38,7 @@ board in its own module because its shape differs per game.
 
 ```js
 S = {
-  game:  'ms' | 'c4' | 'pong' | 'bs',
+  game:  'ms' | 'c4' | 'pong' | 'hanoi',
   duel:  boolean,          // there's an agent opponent
   mcp:   boolean,          // WebMCP available
   turn:  'human' | 'agent',
@@ -46,7 +46,7 @@ S = {
   verdict: string,
   round:  { human, agent },   // points WITHIN the round
   series: { human, agent },   // rounds won
-  solo:   { msWins, c4Solved, pongBest, bsBest }
+  solo:   { msWins, c4Solved, pongBest, hanoiBest }
 }
 ```
 
@@ -107,13 +107,14 @@ never a mine. Claiming during `fresh` is rejected: the board doesn't exist yet.
 | `pong_read` | yes | **blocks** until the ball turns toward the agent, then the interception point |
 | `pong_move` | no | where the paddle ended up, and resumes full speed |
 
-**Battleship**, only while active:
+**Hanoi**, only while active:
 
 | Tool | Read-only | Returns |
 | --- | --- | --- |
-| `bs_board` | yes | enemy waters as far as this side's own shots have shown, plus its own damage |
-| `bs_targets` | yes | how many placements of the ships still afloat fit over each unfired cell |
-| `bs_fire` | no | miss, hit or sunk, and whether the turn is kept |
+| `hanoi_ready` | no | starts the one clock for both sides, and the starting position |
+| `hanoi_board` | yes | its own tower as text, its move count and the clock |
+| `hanoi_moves` | yes | the moves that are legal now — never which one is good |
+| `hanoi_move` | no | the new position, the legal moves from it, and the time if it won |
 
 Every write response carries `ok`. If `false`, it carries a prose `reason` and
 state is left untouched. If `true`, it carries the relevant new state and
@@ -378,52 +379,48 @@ no frame rate, however coarse, can put it through a paddle. A hit only counts on
 the substep that actually crosses the paddle's inner face, so a paddle slid into
 place after the ball went by cannot catch it retroactively.
 
-## Battleship and the information boundary
+## Hanoi, and what an agent's move actually costs
 
-The other three games are played with everything on the table: both sides see
-the same board. Battleship is here for the case that makes WebMCP an
-architectural argument rather than a convenience — **the two sides know
-different things, and the page is what decides which.**
+Pong showed that WebMCP can drive something continuous. Hanoi shows the bill.
+Both sides solve their own tower of five discs at the same time, against one
+clock, and the winner is whoever finishes first. There are no turns at all — the
+same as Pong, and for the same reason, so no `guard()` anywhere.
 
-Each side gets a 6×6 grid with a 3 and two 2s, placed at random and never
-touching, not even at a corner. Turns alternate; a hit fires again, a miss
-passes the turn, which is the same "get it right and keep playing" shape as
-`ms_claim` and keeps a good agent's turn visible as a burst of calls rather than
-one shot every other minute.
+**Five discs, and the number is the design.** 31 moves is optimal. At three or
+four discs the race is decided by how fast a human can click, and all the room
+learns is that a tool call costs a round-trip. At five, a human who does not
+know the recursion flails while an agent that does plays 31 clean moves, so the
+agent wins for the right reason — for what it knows, not for how fast anything
+types. It also puts 31 calls in the rail one after another, which is the second
+demo moment landing on its own.
 
-**Where the boundary actually lives.** Every tool answer is built from
-`knownGrid(who)`, which walks only the cells that side has already fired at.
-There is no code path from a tool to the opponent's `ships` array that does not
-go through a shot. That is the difference between a claimed guarantee and a
-structural one, and it is what makes the demo moment work: ask the agent to look
-at the human's fleet, and it has nothing to look with. `bs_board` says so in as
-many words, which is cheaper than letting it waste a turn discovering it.
+**The aid stops at legal, and never reaches good.** `hanoi_moves` returns the
+moves that are legal from the current position and says outright that they are
+not the good ones. This is the sharpest case of the house rule about constraints
+rather than drawings: the optimal move here is a four-line recursion, so a tool
+that returned it would leave the agent nothing to do but transcribe, and the race
+would demonstrate nothing at all. Legal moves stop it wasting calls on invalid
+ones, which is the failure that makes an agent look stupid, without touching the
+part that makes it look clever.
 
-**The limit of the guarantee, stated rather than glossed.** The human's own
-fleet is on the human's screen, because they have to see it. An agent reading
-the screen instead of calling the tools can read it too. This is the same class
-of problem as playing the board by clicking (see the turn guard above), it is
-inherent to two players sharing one screen, and it is worth naming out loud in
-the room: the tools enforce the boundary, a screenshot does not respect it, and
-that is precisely the argument for exposing capabilities as tools instead of
-pointing an agent at a screen.
+**The clock is a timestamp, never a tally.** `elapsed()` subtracts `startedAt`
+from the current time. A throttled background tab can make the on-screen clock
+stutter — the 100ms ticker that repaints it is an ordinary interval, and this is
+the one place that doesn't matter — but it can never make the race itself wrong.
+That is the same lesson as Pong's worker heartbeat, applied by making the value
+independent of how often anything runs rather than by fighting the throttle.
 
-**The aid.** `bs_targets` counts, for every cell not yet fired at, how many
-placements of the enemy's remaining ships still fit given everything the shots
-have shown. Misses kill a placement; so does touching a sunk ship, since ships
-are never adjacent — and that rule is in the visible rules text, so both sides
-are entitled to use it. The moment a hit exists that no sunk ship accounts for,
-only placements covering that hit are counted: the map flips from hunting to
-finishing, which is the difference between an agent that looks lucky and one
-that looks like it is playing. A test fires nothing but the aid's top pick and
-asserts the whole fleet goes down in under 26 shots, against the ~30 a random
-sweep needs; if the aid ever becomes decoration, that test says so.
+**Nobody starts early.** In a duel the ball is dead until `hanoi_ready`, which
+starts the one clock for both sides — the same shape as `pong_ready`, and for the
+same reason: the human has hands on the keyboard and the agent does not, so a
+race that begins when someone feels like it is not a race. Space starts it by
+hand for `?duo=1` and for demoing with no agent attached. In solo there is nobody
+to be fair to, so the clock starts on the player's first move.
 
-**The map is a button.** "Show agent's map" paints that same count over the
-human's own waters. The room sees the deduction the tool handed over, and then
-watches whether the agent took the shot it was pointed at — the same idea as
-Pong drawing the interception line it gave away, and the most direct answer this
-project has to "what is the agent actually being told?".
+**What each side may know.** Both towers are on screen, so the move counts are
+public — knowing you are behind is part of a race, and `snapshot` carries the
+opponent's count. The arrangement is not: working out the position is the puzzle,
+and it stays each side's own problem.
 
 ## Session metrics
 

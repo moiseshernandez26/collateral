@@ -1,11 +1,12 @@
 // The strip above the board: whose turn it is, and the round line under it.
-// Split out of controller.ts when Battleship pushed that file past the ~200-line
-// guideline — controller keeps paint() and startGame(), this keeps the text.
+// Split out of controller.ts when a fourth game pushed that file past the
+// ~200-line guideline — controller keeps paint() and startGame(), this keeps
+// the text.
 import { S } from './state';
 import { MS, taken, flags, claimMode, flagMode } from './minesweeper/state';
 import { msg as c4Msg } from './connect4/state';
 import { PONG, rallies, thinking, awaitingStart } from './pong/state';
-import { FLEET_CELLS, sunkAt as bsSunkAt, soloShots as bsShots } from './battleship/state';
+import { OPTIMAL, moves as hanoiMoves, startedAt as hanoiStarted, elapsedFor, fmt } from './hanoi/state';
 
 export function paintHud(): void {
   paintTurn();
@@ -26,8 +27,8 @@ function paintTurn(): void {
         ? 'tap "New game"'
         : S.game === 'c4'
           ? 'tap "Next puzzle"'
-          : S.game === 'bs'
-            ? 'tap "New fleet"'
+          : S.game === 'hanoi'
+            ? 'tap "New tower"'
             : 'tap "New run"';
     return;
   }
@@ -49,28 +50,31 @@ function paintTurn(): void {
       : 'keep it alive · ↑ / ↓';
     return;
   }
+  // Hanoi has no turns either: both sides work their own tower at once against
+  // one clock, so the box reports the race rather than whose move it is.
+  if (S.game === 'hanoi') {
+    const waiting = S.duel && hanoiStarted === null;
+    t.className = 'turn ' + (waiting ? 'a' : 'h');
+    who.textContent = waiting ? 'On your marks' : S.duel ? 'Race' : 'Hanoi';
+    hint.textContent = waiting
+      ? 'the clock starts when the agent calls hanoi_ready'
+      : S.duel
+        ? 'both towers at once · first one finished wins'
+        : hanoiStarted === null
+          ? 'move the tower onto peg 2 · the clock starts on your first move'
+          : 'move the tower onto peg 2 · the clock is running';
+    return;
+  }
   if (!S.duel) {
     t.className = 'turn h';
-    who.textContent = S.game === 'ms' ? 'Minesweeper' : S.game === 'bs' ? 'Battleship' : 'Puzzle';
+    who.textContent = S.game === 'ms' ? 'Minesweeper' : 'Puzzle';
     hint.textContent =
-      S.game === 'ms'
-        ? flagMode
-          ? 'flag mode active'
-          : 'tap to open · right-click to flag'
-        : S.game === 'bs'
-          ? 'sink the fleet in as few shots as you can'
-          : 'one shot wins';
+      S.game === 'ms' ? (flagMode ? 'flag mode active' : 'tap to open · right-click to flag') : 'one shot wins';
   } else if (S.turn === 'human') {
     t.className = 'turn h';
     who.textContent = 'Your turn';
     hint.textContent =
-      S.game === 'ms'
-        ? claimMode
-          ? 'claiming: tap where you think a mine is'
-          : 'tap to open'
-        : S.game === 'bs'
-          ? 'fire into enemy waters · a hit fires again'
-          : 'tap a column';
+      S.game === 'ms' ? (claimMode ? 'claiming: tap where you think a mine is' : 'tap to open') : 'tap a column';
   } else {
     t.className = 'turn a';
     who.textContent = "Agent's turn";
@@ -98,14 +102,13 @@ function paintRoundLine(): void {
       L.textContent = c4Msg || '';
       R.innerHTML = `<b>${S.solo.c4Solved}</b> solved`;
     }
-  } else if (S.game === 'bs') {
-    const left = (who: 'human' | 'agent'): number => FLEET_CELLS - bsSunkAt[who].size;
+  } else if (S.game === 'hanoi') {
     if (S.duel) {
-      L.innerHTML = `<b class="tag h">their fleet ${left('agent')}</b> · <b class="tag a">yours ${left('human')}</b>`;
-      R.textContent = 'cells left afloat · a hit fires again';
+      L.innerHTML = `<b class="tag h">you ${hanoiMoves.human}</b> · <b class="tag a">agent ${hanoiMoves.agent}</b>`;
+      R.innerHTML = `moves · <b>${OPTIMAL}</b> is optimal`;
     } else {
-      L.innerHTML = `<b>${bsShots}</b> shots fired`;
-      R.innerHTML = S.solo.bsBest ? `best <b>${S.solo.bsBest}</b>` : `<b>${FLEET_CELLS}</b> cells of fleet to find`;
+      L.innerHTML = `<b>${hanoiMoves.human}</b> moves · <b>${fmt(elapsedFor('human'))}</b>`;
+      R.innerHTML = S.solo.hanoiBest ? `best <b>${fmt(S.solo.hanoiBest)}</b>` : `<b>${OPTIMAL}</b> moves is optimal`;
     }
   } else if (S.duel) {
     L.innerHTML = `<b class="tag h">you ${S.round.human}</b> · <b class="tag a">agent ${S.round.agent}</b>`;

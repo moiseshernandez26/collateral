@@ -4,8 +4,8 @@ A turn-based minigame arcade in the browser where the opponent is an
 **external agent** — a browser AI agent, an MCP inspector, whatever's on the
 other end — playing by calling [WebMCP](https://github.com/webmachinelearning/webmcp)
 tools registered with `document.modelContext.registerTool()`. Four games:
-a minesweeper duel, Connect 4, a real-time Pong, and a Battleship where neither
-side can see the other's fleet.
+a minesweeper duel, Connect 4, a real-time Pong, and a Towers of Hanoi race
+against the clock.
 
 Pong is the interesting one. A tool call is request/response and an agent
 round-trip takes seconds, which is longer than the ball takes to cross the

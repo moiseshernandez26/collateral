@@ -10,7 +10,7 @@ beforeEach(() => {
   S.duel = true;
   S.over = false;
   S.round = { human: 0, agent: 0 };
-  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0, bsBest: 0 };
+  S.solo = { msWins: 0, c4Solved: 0, pongBest: 0, hanoiBest: 0 };
 });
 
 describe('predict', () => {

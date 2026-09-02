@@ -3,11 +3,11 @@ import { toolDef } from './helpers';
 import { MS_TOOLS } from '../minesweeper/tools';
 import { C4_TOOLS } from '../connect4/tools';
 import { PONG_TOOLS } from '../pong/tools';
-import { BS_TOOLS } from '../battleship/tools';
+import { HANOI_TOOLS } from '../hanoi/tools';
 import { logTools } from '../log';
 import type { GameId, ToolDef } from '../types';
 
-const GAME_TOOLS: Record<GameId, ToolDef[]> = { ms: MS_TOOLS, c4: C4_TOOLS, pong: PONG_TOOLS, bs: BS_TOOLS };
+const GAME_TOOLS: Record<GameId, ToolDef[]> = { ms: MS_TOOLS, c4: C4_TOOLS, pong: PONG_TOOLS, hanoi: HANOI_TOOLS };
 
 let gameCtrl: AbortController | null = null;
 

@@ -18,20 +18,21 @@ export const RULES: Record<string, string> = {
     <ul><li>There is <b>one</b> column where your red piece makes four in a row.</li>
     <li>If you get it wrong, the piece doesn't stay: try again.</li>
     <li>Solving it moves you to the next puzzle.</li></ul>`,
-  bs_duel: `6×6 waters each, turns alternate. One ship of 3 and two of 2 per side,
-    placed at random and never touching — not even at a corner.
-    <ul><li>Fire into <b>enemy waters</b> on the left. A <b>hit fires again</b>;
-    a miss passes the turn.</li>
-    <li><b>Neither side can see the other's fleet.</b> The agent has no tool that
-    would tell it — only what its own shots have revealed.</li>
-    <li><code>bs_targets</code> hands it the deduction: how many ways the ships
-    left afloat still fit over each cell.</li>
-    <li>Press <b>"Show agent's map"</b> to draw that same deduction over your own
-    waters and watch whether it takes the shot it was pointed at.</li></ul>`,
-  bs_solo: `One hidden fleet in 6×6 waters: a ship of 3 and two of 2, never touching.
-    <ul><li>Sink all seven cells in as few shots as you can.</li>
-    <li>A miss costs you nothing but a shot — there is no one to lose the turn to.</li>
-    <li>Your best sweep is kept.</li></ul>`,
+  hanoi_duel: `A race, not a turn-based game. You each get your own tower of 5 discs
+    and one clock runs for both. <b>The agent starts it</b> by calling
+    <code>hanoi_ready</code>, so nobody gets a head start.
+    <ul><li>Move the whole tower onto <b>peg 2</b>. Click a peg to pick up its top
+    disc, click another to drop it.</li>
+    <li>A disc may only rest on a <b>bigger</b> one.</li>
+    <li><b>31 moves is optimal.</b> Fewer is impossible; more costs you time.</li>
+    <li>The agent gets told which moves are <i>legal</i>, never which one is
+    <i>good</i> — that part it has to work out, and every call costs it clock.</li></ul>`,
+  hanoi_solo: `The classic puzzle, against the clock. One tower of 5 discs.
+    <ul><li>Move the whole tower onto <b>peg 2</b>: click a peg to pick up its top
+    disc, click another to drop it.</li>
+    <li>A disc may only rest on a bigger one.</li>
+    <li>The clock starts on your first move. <b>31 moves is optimal.</b></li>
+    <li>Your best time is kept.</li></ul>`,
   pong_duel: `Real-time, not turn-based. You are the <b>red</b> paddle on the right,
     the agent is the <b>blue</b> one on the left. First to 5 points wins the round.
     <b>The agent serves.</b> Nothing moves until it calls <code>pong_ready</code>,

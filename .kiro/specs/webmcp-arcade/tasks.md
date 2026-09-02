@@ -50,16 +50,16 @@ What's checked off is already in the working prototype.
 - [x] 7.6 Board clicks on the agent's turn are refused out loud, not swallowed — _R4.4_
 
 
-## Phase 3c — Battleship
+## Phase 3c — Towers of Hanoi
 
-- [x] 3c.1 6×6 boards, fleet of 3/2/2 placed at random and never touching — _R15.1_
-- [x] 3c.2 `knownGrid` as the single source for every tool answer — _R15.2, R15.8_
-- [x] 3c.3 Fire: hit keeps the turn, miss passes it, sunk names the length — _R15.3, R15.4_
-- [x] 3c.4 Repeat and off-grid shots rejected without costing the turn — _R15.5_
-- [x] 3c.5 Round ends when a fleet is gone — _R15.6_
-- [x] 3c.6 `bs_targets` placement counts, hunt and finish modes — _R15.7_
-- [x] 3c.7 "Show agent's map" draws the aid over the human's waters — _R15.9_
-- [x] 3c.8 Solo: sink one fleet in as few shots as possible, best kept — _R15.10_
+- [x] 3c.1 Two towers of 5 discs, one clock, no turns — _R15.1, R15.3, R15.5_
+- [x] 3c.2 Legal-move rule enforced, rejections cost nothing — _R15.2_
+- [x] 3c.3 `hanoi_ready` starts the race so nobody gets a head start — _R15.4_
+- [x] 3c.4 First tower finished wins, loser stops where it stands — _R15.6_
+- [x] 3c.5 Clock from timestamps, immune to a throttled tab — _R15.7_
+- [x] 3c.6 `hanoi_moves` gives legal moves, never the optimal one — _R15.8_
+- [x] 3c.7 Each side sees the other's move count, not its tower — _R15.9_
+- [x] 3c.8 Solo: clock on first move, best time kept, no opponent — _R15.10_
 
 ## Phase 4 — Deduction aids
 
@@ -236,4 +236,4 @@ Ideas that fit later without redesigning anything:
   - Fixed-size `dt` capping plus paddle-face crossing tests, so no frame
     rate lets the ball tunnel through a paddle.
 
-- [x] A fourth minigame — Battleship, chosen for the information boundary (v21)
+- [x] A fourth minigame — Battleship (v21), replaced by the Towers of Hanoi race (v22)

@@ -41,11 +41,11 @@ src/                   →  the app, split by module (see CLAUDE.md architecture
   Reached automatically with no WebMCP, or by choosing "play solo" at the
   picker when WebMCP is available.
 - **Deduction aids** — `ms_frontier`, `c4_analysis`, Pong's `intercept_y` and
-  Battleship's `bs_targets`, which hand the agent the constraints already
-  solved. This is the real work of the project.
-- **The information boundary** — in Battleship the two sides know different
-  things, and every tool answer is derived only from the cells that side has
-  already fired at. The page is what decides what the agent may know.
+  Hanoi's `hanoi_moves`, which hand the agent the constraints already worked
+  out. This is the real work of the project.
+- **The race** — in Hanoi both sides solve their own tower at once against one
+  clock. It is where the cost of an agent's move, one round-trip each, becomes
+  something the room can watch.
 - **The agent loop** — Pong's `pong_read` blocks until the ball comes at the
   agent, so a request/response tool can drive a continuous game. The ball slows
   while the agent decides.
