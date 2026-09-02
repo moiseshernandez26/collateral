@@ -104,8 +104,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .c4.a{background:var(--ink);box-shadow:inset 0 -3px 0 rgba(0,0,0,.3)}
 .c4.win{outline:4px solid #F2D64B;outline-offset:-4px}
 
-/* Hanoi: two towers side by side, one clock under them. */
-#hanoiBoards{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+/* Hanoi: two towers side by side, one clock under them. The clock is a row of
+   its own rather than a wrapping flex item — as an item it counted toward the
+   row's max-content width and then wrapped anyway, leaving the towers sitting
+   left of centre in a container wider than they were. */
+#hanoiBoards{display:flex;flex-direction:column;align-items:center;gap:12px}
+.hanoi-row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start;justify-content:center;max-width:100%}
 .hanoi-side h3{margin:0 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);font-weight:700}
 .hanoi-board{display:flex;gap:10px;background:var(--open);border:3px solid var(--ink);padding:12px 12px 0}
 .peg{
@@ -122,14 +126,16 @@ div.peg{cursor:default}
   display:flex;align-items:center;justify-content:center}
 .disc b{font-family:var(--mono);font-size:10px;color:#fff;font-weight:700}
 .d1{background:#C24A2C}.d2{background:#D98324}.d3{background:#7C8878}.d4{background:#3F35B8}.d5{background:#141613}
-.peg:hover:not(:disabled) .base{background:var(--human)}
+/* Only the human's pegs are buttons. The agent's are divs, and they used to
+   light up on hover like something you could play. */
+button.peg:hover:not(:disabled) .base{background:var(--human)}
 .peg:focus-visible{outline:3px solid var(--agent);outline-offset:2px}
 .peg.picked .base{background:var(--human);height:11px}
 .peg.picked .discs .disc:last-child{transform:translateY(-9px);box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .peg.target::after{content:'';position:absolute;inset:0;border:3px dashed var(--human);pointer-events:none}
 .peg.done::after{content:'';position:absolute;inset:0;border:3px solid #2E7D32;pointer-events:none}
-.hanoi-clock{flex-basis:100%;font-family:var(--mono);font-size:13px;color:var(--ink);border-top:2px solid var(--ink);padding-top:8px}
-#hanoiBoards{max-width:100%}
+.hanoi-clock{align-self:stretch;text-align:center;font-family:var(--mono);font-size:13px;color:var(--ink);border-top:2px solid var(--ink);padding-top:8px}
+
 
 #pongCanvas{width:min(100%,var(--board));aspect-ratio:480/300;height:auto;border:3px solid var(--ink);background:var(--panel);touch-action:none;display:block}
 #pongCanvas:focus-visible{outline:3px solid var(--agent);outline-offset:3px}
@@ -144,7 +150,7 @@ div.peg{cursor:default}
 #rules ul{margin:6px 0 0;padding-left:17px} #rules li{margin-bottom:4px}
 #rules li::marker{color:var(--human);font-weight:700}
 #logSec{flex:1 1 0;min-height:118px;display:flex;flex-direction:column}
-.metrics{padding:0 15px 8px;font-family:var(--mono);font-size:10.5px;color:var(--soft);border-bottom:2px solid var(--ink)}
+.metrics{padding:7px 15px 8px;font-family:var(--mono);font-size:10.5px;color:var(--soft);border-bottom:2px solid var(--ink)}
 #log{flex:1;min-height:0;overflow-y:auto}
 .ev{padding:7px 15px;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:11px;line-height:1.5}
 .ev .n{color:var(--agent);font-weight:500}
@@ -166,7 +172,7 @@ div.peg{cursor:default}
    enough room to hold the columns down to ~660px. */
 @media (max-width:1060px){
   :root{--cell:33px;--slot:42px;--dw:11px;--d0:14px}
-  #hanoiBoards{gap:18px}
+  .hanoi-row{gap:18px}
   .arena{padding:16px 14px 24px;gap:12px}
 }
 @media (max-width:860px){
@@ -177,7 +183,7 @@ div.peg{cursor:default}
   .tabs button{font-size:12.5px;letter-spacing:.02em;padding:8px 3px}
   .turn{padding:7px 11px} .turn .who{font-size:17px} .turn .hint{font-size:10px}
   .arena{padding:13px 10px 20px;gap:10px}
-  #hanoiBoards{gap:13px}
+  .hanoi-row{gap:13px}
   #rules{font-size:13px;padding:10px 13px 12px}
 }
 @media (max-width:660px){

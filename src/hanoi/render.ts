@@ -3,7 +3,6 @@ import { paint } from '../controller';
 import { HANOI, peg, moves, picked, setPicked, canMove, elapsedFor, startedAt, fmt, plural } from './state';
 import { move, beginRace } from './actions';
 
-const boards = document.getElementById('hanoiBoards')!;
 const mine = document.getElementById('hanoiMine')!;
 const theirs = document.getElementById('hanoiTheirs')!;
 const theirsWrap = document.getElementById('hanoiTheirsWrap')!;
@@ -62,7 +61,6 @@ export function buildGrid(): void {
     }
   }
   theirsWrap.style.display = S.duel ? '' : 'none';
-  boards.classList.toggle('solo', !S.duel);
   startTicker();
 }
 
