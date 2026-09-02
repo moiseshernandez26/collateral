@@ -26,7 +26,7 @@ import { snapshot, type Snapshot } from './query';
 
 let waiter: { resolve: (v: Snapshot) => void; timer: ReturnType<typeof setTimeout> } | null = null;
 
-export function isApproaching(): boolean {
+function isApproaching(): boolean {
   return running && !S.over && ball.vx < 0 && ball.x <= PONG.w * PONG.approachAt;
 }
 

@@ -27,8 +27,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .picker-card .tag.h{color:var(--human)} .picker-card .tag.a{color:var(--agent)}
 .ready-status{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);border:2px dashed var(--rule);padding:8px 10px;margin:0 0 16px}
 .ready-status.on{color:var(--agent);border-color:var(--agent);border-style:solid}
-.picker-choices #pongStart{border-color:var(--human);color:var(--human)}
-.picker-choices #pongStart:hover{background:var(--human);color:#fff}
 .ready-esc{margin:14px 0 0 !important;font-size:11px !important;color:var(--soft)}
 
 .bar{border-bottom:3px solid var(--ink);background:var(--panel);padding:9px 18px;display:flex;align-items:center;gap:13px;flex-wrap:wrap}

@@ -13,7 +13,7 @@ export type Pegs = number[][];
 
 export let peg: Record<Player, Pegs>;
 export let moves: Record<Player, number>;
-export let finishedAt: Record<Player, number | null>;
+let finishedAt: Record<Player, number | null>;
 export let startedAt: number | null; // one clock for the whole race
 export let picked: number | null; // the peg the human has selected as a source
 
@@ -55,7 +55,7 @@ export const elapsedFor = (who: Player): number =>
 
 export const solved = (who: Player): boolean => peg[who][HANOI.pegs - 1].length === HANOI.discs;
 
-export const topOf = (who: Player, p: number): number | undefined => peg[who][p][peg[who][p].length - 1];
+const topOf = (who: Player, p: number): number | undefined => peg[who][p][peg[who][p].length - 1];
 
 /** A move is legal when the source has a disc and the destination's top disc
  *  is bigger. That is the entire game. */

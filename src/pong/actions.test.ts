@@ -15,7 +15,7 @@ import {
   setPaddle,
   setAgentReady,
 } from './state';
-import { step, moveAgentPaddle, moveHumanPaddle, driveHumanPaddle, startRound, beginRally } from './actions';
+import { step, moveAgentPaddle, driveHumanPaddle, startRound, beginRally } from './actions';
 import { awaitApproach, releaseWaiter } from './agent';
 
 beforeEach(() => {
@@ -457,13 +457,6 @@ describe('awaitApproach', () => {
     expect(ball.vx).toBeLessThan(0);
     expect(ball.x).toBeLessThan(PONG.w * PONG.approachAt);
     expect((await awaitApproach()).event).toBe('approaching');
-  });
-});
-
-describe('moveHumanPaddle', () => {
-  it('clamps to the court like the agent tool does', () => {
-    moveHumanPaddle(10_000);
-    expect(paddle.human).toBe(PONG.h - PONG.paddleH / 2);
   });
 });
 

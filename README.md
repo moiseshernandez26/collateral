@@ -76,5 +76,10 @@ for a self-signed certificate (see `CLAUDE.md` → "How to test" for the caveat)
 ## Stack
 
 Vite, TypeScript (strict), Vitest + jsdom for unit tests. anime.js loads from
-a CDN with a runtime guard — not an npm dependency. Every dependency is
-MIT-licensed.
+a CDN with a runtime guard — not an npm dependency.
+
+Licences. What the browser loads: anime.js under MIT, and the Anton, Chivo and
+DM Mono fonts under the SIL Open Font Licence 1.1. No `node_modules` code is
+bundled. The build and test toolchain is 83 packages, mostly MIT with some
+Apache-2.0, BSD, ISC, CC0, MPL-2.0 and BlueOak — all OSI-approved, and none of
+it ships.

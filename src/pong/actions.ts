@@ -39,10 +39,6 @@ export function moveAgentPaddle(y: unknown): ToolResult {
   return { ...snapshot('moved'), paddle_y: at, clamped: at !== n };
 }
 
-export function moveHumanPaddle(y: number): void {
-  setPaddle('human', y);
-}
-
 /**
  * Moves the human paddle by however far it travels in `dtMs` at `dir`
  * (-1 up, 1 down, 0 idle). Time-based rather than a fixed jump per keydown, so

@@ -59,7 +59,15 @@ The entire design exists so these three moments work. Don't break them.
   per game. A file approaching the limit gets split again, not stretched.
 - **anime.js still loads from a CDN, guarded** (`if (window.anime)`), pulled in
   from `index.html`, never as an npm dependency or a hard requirement.
-- **MIT-only libraries.** Today: anime.js 3.2.1.
+- **Permissive licences only, and the rule is different for what ships and what
+  builds.** *Shipped* (anything the browser loads): anime.js 3.2.1, MIT; and
+  three Google fonts — Anton, Chivo, DM Mono — under the **SIL Open Font
+  Licence 1.1**, not MIT. Nothing from `node_modules` reaches the bundle.
+  *Toolchain* (devDependencies, never shipped): 83 packages, 66 MIT and the rest
+  MIT-0, Apache-2.0, BSD, ISC, CC0, MPL-2.0 and BlueOak — MPL-2.0 arrives via
+  `lightningcss` inside Vite. All OSI-approved and all fine to build with.
+  This entry used to read "MIT-only libraries", which was never true of the
+  fonts and stopped being true of the toolchain the moment Vite was added.
 - **No WebMCP, single player.** Not a local bot opponent, not playing both sides:
   a real single-player mode, and the interface doesn't mention an opponent
   anywhere.

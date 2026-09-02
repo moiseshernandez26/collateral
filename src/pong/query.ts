@@ -31,7 +31,7 @@ export function predict(who: Player): number | null {
 // tool list and starts playing has to be told which paddle is its own
 // *somewhere it cannot miss it* — the one time this was only in the
 // descriptions, the agent went for the mouse and played the human's paddle.
-export const YOU_ARE =
+const YOU_ARE =
   'the BLUE paddle on the LEFT — it moves only via pong_move; the mouse and the arrow keys are the human\'s';
 
 // The single most load-bearing field in the whole game. An agent that reads one

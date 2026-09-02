@@ -319,4 +319,10 @@ is knowing the algorithm.
 2. THE SYSTEM SHALL work even if CDN dependencies fail to load.
 3. THE SYSTEM SHALL NOT make network requests to any first-party or third-party
    service during play.
-4. THE SYSTEM SHALL use only MIT-licensed dependencies.
+4. THE SYSTEM SHALL load only permissively licensed third-party code and assets
+   in the browser: today anime.js under MIT, and the Anton, Chivo and DM Mono
+   fonts under the SIL Open Font Licence 1.1. No `node_modules` code SHALL reach
+   the bundle.
+5. THE SYSTEM's build and test toolchain MAY use any OSI-approved licence, since
+   none of it is distributed — today that includes Apache-2.0, BSD, ISC, CC0,
+   MPL-2.0 and BlueOak alongside MIT.

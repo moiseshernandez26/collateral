@@ -11,10 +11,6 @@ const GAME_TOOLS: Record<GameId, ToolDef[]> = { ms: MS_TOOLS, c4: C4_TOOLS, pong
 
 let gameCtrl: AbortController | null = null;
 
-export function getToolCount(id: GameId): number {
-  return GAME_TOOLS[id].length;
-}
-
 export async function registerGameTools(id: GameId): Promise<number> {
   if (!S.mcp || !document.modelContext) return 0;
   if (gameCtrl) gameCtrl.abort();
