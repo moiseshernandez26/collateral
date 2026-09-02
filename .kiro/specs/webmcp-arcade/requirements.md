@@ -247,6 +247,45 @@ sees that WebMCP is not limited to games that politely wait for the agent.
     should make, so that an agent which stops to report between shots is the
     exception rather than the default.
 
+## Requirement 15 — Battleship
+
+**Story:** As the presenter, I want one game where the two sides hold different
+information, so the room sees that the page decides what the agent may know —
+not the agent, and not its cleverness.
+
+### Criteria
+
+1. THE SYSTEM SHALL give each side a 6×6 grid holding one ship of 3 cells and two
+   ships of 2, placed at random without overlapping or touching diagonally.
+2. THE SYSTEM SHALL NOT expose the opponent's ship positions through any tool.
+   Everything a tool returns SHALL be derived only from the cells that side has
+   already fired at.
+   Note the limit of that guarantee, which is worth stating rather than glossing:
+   the human's own fleet is drawn on their screen, because they have to see it.
+   An agent reading the screen instead of calling the tools can therefore see it
+   too. That is the same class of problem as playing the board by clicking, it is
+   inherent to two players sharing one screen, and the honest thing is to name it
+   in the demo rather than to claim a boundary the page cannot enforce.
+3. WHEN a player fires at a cell THE SYSTEM SHALL answer hit, miss, or sunk, and
+   SHALL name the sunk ship's length.
+4. WHEN a shot hits THE SYSTEM SHALL let that player fire again; WHEN it misses
+   THE SYSTEM SHALL pass the turn.
+5. IF a player fires at a cell they have already fired at, or outside the grid,
+   THEN THE SYSTEM SHALL reject the shot without changing state or passing the
+   turn.
+6. WHEN a player has sunk every enemy ship THE SYSTEM SHALL end the round and
+   award it to them.
+7. THE SYSTEM SHALL expose a targeting aid that returns, for each unfired cell,
+   how many placements of the enemy's remaining ships are still consistent with
+   everything the shots have revealed, and SHALL say whether it is hunting or
+   finishing a wounded ship.
+8. THE SYSTEM SHALL compute that aid only from what the firing side legitimately
+   knows, so that following it can never reveal a cell the shots have not earned.
+9. THE SYSTEM SHALL be able to draw the agent's own targeting map over the
+   board, so the room can see the deduction the tool handed it.
+10. WHILE in solo mode THE SYSTEM SHALL present one hidden fleet to sink in as few
+    shots as possible, keep the best result, and mention no opponent anywhere.
+
 ## Requirement 10 — Call rail
 
 ### Criteria

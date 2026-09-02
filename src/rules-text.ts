@@ -18,6 +18,20 @@ export const RULES: Record<string, string> = {
     <ul><li>There is <b>one</b> column where your red piece makes four in a row.</li>
     <li>If you get it wrong, the piece doesn't stay: try again.</li>
     <li>Solving it moves you to the next puzzle.</li></ul>`,
+  bs_duel: `6×6 waters each, turns alternate. One ship of 3 and two of 2 per side,
+    placed at random and never touching — not even at a corner.
+    <ul><li>Fire into <b>enemy waters</b> on the left. A <b>hit fires again</b>;
+    a miss passes the turn.</li>
+    <li><b>Neither side can see the other's fleet.</b> The agent has no tool that
+    would tell it — only what its own shots have revealed.</li>
+    <li><code>bs_targets</code> hands it the deduction: how many ways the ships
+    left afloat still fit over each cell.</li>
+    <li>Press <b>"Show agent's map"</b> to draw that same deduction over your own
+    waters and watch whether it takes the shot it was pointed at.</li></ul>`,
+  bs_solo: `One hidden fleet in 6×6 waters: a ship of 3 and two of 2, never touching.
+    <ul><li>Sink all seven cells in as few shots as you can.</li>
+    <li>A miss costs you nothing but a shot — there is no one to lose the turn to.</li>
+    <li>Your best sweep is kept.</li></ul>`,
   pong_duel: `Real-time, not turn-based. You are the <b>red</b> paddle on the right,
     the agent is the <b>blue</b> one on the left. First to 5 points wins the round.
     <b>The agent serves.</b> Nothing moves until it calls <code>pong_ready</code>,

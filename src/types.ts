@@ -1,5 +1,5 @@
 export type Player = 'human' | 'agent';
-export type GameId = 'ms' | 'c4' | 'pong';
+export type GameId = 'ms' | 'c4' | 'pong' | 'bs';
 
 export interface MatchState {
   game: GameId;
@@ -10,7 +10,7 @@ export interface MatchState {
   verdict: string;
   round: { human: number; agent: number };
   series: { human: number; agent: number };
-  solo: { msWins: number; c4Solved: number; pongBest: number };
+  solo: { msWins: number; c4Solved: number; pongBest: number; bsBest: number };
 }
 
 export interface ToolResult {

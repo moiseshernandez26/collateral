@@ -54,11 +54,16 @@
       <button id="tabMs" class="on">Minesweeper</button>
       <button id="tabC4">Connect 4</button>
       <button id="tabPong">Pong</button>
+      <button id="tabBs">Battleship</button>
     </div>
     <div id="turn" class="turn h"><span class="who"></span><span class="hint" id="turnHint"></span></div>
     <div class="roundline"><span id="rlLeft"></span><span id="rlRight"></span></div>
     <div id="msGrid"></div>
     <div id="c4Grid" style="display:none"></div>
+    <div id="bsGrids" style="display:none">
+      <div class="bs-side"><h3>Enemy waters</h3><div id="bsEnemy" class="bs-grid"></div></div>
+      <div class="bs-side" id="bsOwnWrap"><h3>Your waters</h3><div id="bsOwn" class="bs-grid"></div></div>
+    </div>
     <canvas id="pongCanvas" width="480" height="300" style="display:none"
             tabindex="0" role="application" aria-label="Pong court. Use the arrow up and arrow down keys to move your paddle."></canvas>
     <div class="acts" id="acts"></div>

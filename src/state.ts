@@ -13,7 +13,7 @@ export const S: MatchState = {
   verdict: '',
   round: { human: 0, agent: 0 }, // round points (duel)
   series: { human: 0, agent: 0 }, // rounds won (duel)
-  solo: { msWins: 0, c4Solved: 0, pongBest: 0 }, // single-player scoreboard
+  solo: { msWins: 0, c4Solved: 0, pongBest: 0, bsBest: 0 }, // single-player scoreboard
 };
 
 export const other = (p: Player): Player => (p === 'human' ? 'agent' : 'human');

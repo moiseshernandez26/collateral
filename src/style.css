@@ -98,6 +98,35 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .c4.win{outline:4px solid #F2D64B;outline-offset:-4px}
 @media (max-width:1060px){ .c4{width:42px;height:42px} .ms{width:33px;height:33px;font-size:15px} }
 
+/* Battleship: two grids side by side — the one you fire into, and your own
+   waters with the agent's shots on them. */
+#bsGrids{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#bsGrids.solo{justify-content:flex-start}
+.bs-side h3{margin:0 0 7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);font-weight:700}
+.bs-grid{display:grid;gap:3px;background:var(--ink);padding:3px;border:3px solid var(--ink)}
+.bs{
+  position:relative;width:42px;height:42px;border:0;padding:0;cursor:pointer;background:var(--closed);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.34), inset -2px -2px 0 rgba(0,0,0,.20);
+  font-family:var(--mono);font-size:16px;color:var(--ink);
+}
+.bs:hover:not(:disabled){background:var(--closed-hi)}
+.bs:focus-visible{outline:3px solid #fff;outline-offset:-3px;z-index:2}
+.bs:disabled{cursor:default}
+.bs.own{cursor:default;background:var(--open);box-shadow:none}
+.bs.ship{background:var(--rule);box-shadow:inset 0 0 0 2px rgba(0,0,0,.18)}
+/* A miss is a dot, a hit is a filled square, a sunk ship is solid ink. Shape as
+   well as colour, so it reads from three metres and without colour vision. */
+.bs.miss::after{content:'';position:absolute;inset:0;margin:auto;width:9px;height:9px;border-radius:50%;background:var(--soft)}
+.bs.hit{background:var(--human);box-shadow:inset 0 0 0 3px rgba(0,0,0,.22)}
+.bs.hit::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.bs.sunk{background:var(--ink)}
+.bs.sunk::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--human);font-weight:700}
+.bs.reveal{background:var(--rule);opacity:.75}
+/* The agent's own targeting map, painted over your fleet. */
+.bs.heat{background:color-mix(in srgb, var(--agent) calc(var(--heat) * 68%), var(--open))}
+.bs.heat::before{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(63,53,184,.35)}
+@media (max-width:1060px){ .bs{width:34px;height:34px} #bsGrids{gap:16px} }
+
 #pongCanvas{width:min(100%,580px);aspect-ratio:480/300;height:auto;border:3px solid var(--ink);background:var(--panel);touch-action:none;display:block}
 #pongCanvas:focus-visible{outline:3px solid var(--agent);outline-offset:3px}
 

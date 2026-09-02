@@ -29,6 +29,7 @@ export const CORE: ToolDef[] = [
       { id: 'ms', name: 'Minesweeper duel', active: S.game === 'ms' },
       { id: 'c4', name: 'Connect 4', active: S.game === 'c4' },
       { id: 'pong', name: 'Pong (real-time)', active: S.game === 'pong' },
+      { id: 'bs', name: 'Battleship (hidden fleets)', active: S.game === 'bs' },
     ],
   },
   {
@@ -40,8 +41,8 @@ export const CORE: ToolDef[] = [
       properties: {
         game_id: {
           type: 'string',
-          enum: ['ms', 'c4', 'pong'],
-          description: "'ms' for minesweeper duel, 'c4' for Connect 4, 'pong' for real-time Pong",
+          enum: ['ms', 'c4', 'pong', 'bs'],
+          description: "'ms' for minesweeper duel, 'c4' for Connect 4, 'pong' for real-time Pong, 'bs' for Battleship",
         },
       },
       required: ['game_id'],

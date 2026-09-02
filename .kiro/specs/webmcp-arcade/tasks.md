@@ -49,6 +49,18 @@ What's checked off is already in the working prototype.
 - [x] 7.5 Rail logs the tool list the browser actually holds, on every change — _R10.6, R10.7_
 - [x] 7.6 Board clicks on the agent's turn are refused out loud, not swallowed — _R4.4_
 
+
+## Phase 3c — Battleship
+
+- [x] 3c.1 6×6 boards, fleet of 3/2/2 placed at random and never touching — _R15.1_
+- [x] 3c.2 `knownGrid` as the single source for every tool answer — _R15.2, R15.8_
+- [x] 3c.3 Fire: hit keeps the turn, miss passes it, sunk names the length — _R15.3, R15.4_
+- [x] 3c.4 Repeat and off-grid shots rejected without costing the turn — _R15.5_
+- [x] 3c.5 Round ends when a fleet is gone — _R15.6_
+- [x] 3c.6 `bs_targets` placement counts, hunt and finish modes — _R15.7_
+- [x] 3c.7 "Show agent's map" draws the aid over the human's waters — _R15.9_
+- [x] 3c.8 Solo: sink one fleet in as few shots as possible, best kept — _R15.10_
+
 ## Phase 4 — Deduction aids
 
 - [x] 4.1 `ms_frontier` with `remaining` and `unknown` — _R9.1_
@@ -224,4 +236,4 @@ Ideas that fit later without redesigning anything:
   - Fixed-size `dt` capping plus paddle-face crossing tests, so no frame
     rate lets the ball tunnel through a paddle.
 
-- [ ] A fourth minigame, if the demo ever needs one
+- [x] A fourth minigame — Battleship, chosen for the information boundary (v21)

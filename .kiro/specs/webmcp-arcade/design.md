@@ -13,7 +13,7 @@ dependency rule: **a layer may only call downward, never upward.**
 ├──────────────────────────────────────────────┤
 │ Orchestration    mode, turn, game switching  │
 ├──────────────────────────────────────────────┤
-│ Engines          minesweeper · connect 4     │  ← pure logic
+│ Engines          one per game, pure logic     │  ← no DOM
 ├──────────────────────────────────────────────┤
 │ Presentation     DOM painting                │
 ├──────────────────────────────────────────────┤
@@ -38,7 +38,7 @@ board in its own module because its shape differs per game.
 
 ```js
 S = {
-  game:  'ms' | 'c4',
+  game:  'ms' | 'c4' | 'pong' | 'bs',
   duel:  boolean,          // there's an agent opponent
   mcp:   boolean,          // WebMCP available
   turn:  'human' | 'agent',
@@ -46,7 +46,7 @@ S = {
   verdict: string,
   round:  { human, agent },   // points WITHIN the round
   series: { human, agent },   // rounds won
-  solo:   { msWins, c4Solved }
+  solo:   { msWins, c4Solved, pongBest, bsBest }
 }
 ```
 
@@ -106,6 +106,14 @@ never a mine. Claiming during `fresh` is rejected: the board doesn't exist yet.
 | `pong_state` | yes | the court as text, immediately |
 | `pong_read` | yes | **blocks** until the ball turns toward the agent, then the interception point |
 | `pong_move` | no | where the paddle ended up, and resumes full speed |
+
+**Battleship**, only while active:
+
+| Tool | Read-only | Returns |
+| --- | --- | --- |
+| `bs_board` | yes | enemy waters as far as this side's own shots have shown, plus its own damage |
+| `bs_targets` | yes | how many placements of the ships still afloat fit over each unfired cell |
+| `bs_fire` | no | miss, hit or sunk, and whether the turn is kept |
 
 Every write response carries `ok`. If `false`, it carries a prose `reason` and
 state is left untouched. If `true`, it carries the relevant new state and
@@ -369,6 +377,53 @@ lands while the tab is unfocused never arrives at all.
 no frame rate, however coarse, can put it through a paddle. A hit only counts on
 the substep that actually crosses the paddle's inner face, so a paddle slid into
 place after the ball went by cannot catch it retroactively.
+
+## Battleship and the information boundary
+
+The other three games are played with everything on the table: both sides see
+the same board. Battleship is here for the case that makes WebMCP an
+architectural argument rather than a convenience — **the two sides know
+different things, and the page is what decides which.**
+
+Each side gets a 6×6 grid with a 3 and two 2s, placed at random and never
+touching, not even at a corner. Turns alternate; a hit fires again, a miss
+passes the turn, which is the same "get it right and keep playing" shape as
+`ms_claim` and keeps a good agent's turn visible as a burst of calls rather than
+one shot every other minute.
+
+**Where the boundary actually lives.** Every tool answer is built from
+`knownGrid(who)`, which walks only the cells that side has already fired at.
+There is no code path from a tool to the opponent's `ships` array that does not
+go through a shot. That is the difference between a claimed guarantee and a
+structural one, and it is what makes the demo moment work: ask the agent to look
+at the human's fleet, and it has nothing to look with. `bs_board` says so in as
+many words, which is cheaper than letting it waste a turn discovering it.
+
+**The limit of the guarantee, stated rather than glossed.** The human's own
+fleet is on the human's screen, because they have to see it. An agent reading
+the screen instead of calling the tools can read it too. This is the same class
+of problem as playing the board by clicking (see the turn guard above), it is
+inherent to two players sharing one screen, and it is worth naming out loud in
+the room: the tools enforce the boundary, a screenshot does not respect it, and
+that is precisely the argument for exposing capabilities as tools instead of
+pointing an agent at a screen.
+
+**The aid.** `bs_targets` counts, for every cell not yet fired at, how many
+placements of the enemy's remaining ships still fit given everything the shots
+have shown. Misses kill a placement; so does touching a sunk ship, since ships
+are never adjacent — and that rule is in the visible rules text, so both sides
+are entitled to use it. The moment a hit exists that no sunk ship accounts for,
+only placements covering that hit are counted: the map flips from hunting to
+finishing, which is the difference between an agent that looks lucky and one
+that looks like it is playing. A test fires nothing but the aid's top pick and
+asserts the whole fleet goes down in under 26 shots, against the ~30 a random
+sweep needs; if the aid ever becomes decoration, that test says so.
+
+**The map is a button.** "Show agent's map" paints that same count over the
+human's own waters. The room sees the deduction the tool handed over, and then
+watches whether the agent took the shot it was pointed at — the same idea as
+Pong drawing the interception line it gave away, and the most direct answer this
+project has to "what is the agent actually being told?".
 
 ## Session metrics
 

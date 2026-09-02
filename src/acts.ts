@@ -3,6 +3,7 @@
 import { S } from './state';
 import { paint, startGame } from './controller';
 import { claimMode, flagMode, fresh, toggleClaimMode, toggleFlagMode } from './minesweeper/state';
+import { showMap, toggleMap } from './battleship/state';
 
 const actsEl = document.getElementById('acts')!;
 
@@ -45,11 +46,27 @@ export function paintActs(): void {
       );
       btn('New game', () => startGame('ms', true));
     }
+  } else if (S.game === 'bs' && S.duel) {
+    // The best button in the arcade: it paints the agent's own targeting map
+    // over your fleet, so the room sees the deduction bs_targets handed it and
+    // can watch whether the agent actually took the shot the map points at.
+    btn(
+      showMap ? 'Hiding agent map' : "Show agent's map",
+      () => {
+        toggleMap();
+        paint();
+      },
+      { on: showMap },
+    );
+    btn('New fleet', () => startGame('bs', true));
+    btn('Reset score', resetScore);
   } else if (S.duel) {
     btn('New round', () => startGame(S.game, true));
     btn('Reset score', resetScore);
   } else if (S.game === 'c4') {
     btn(S.over ? 'Next puzzle' : 'Skip puzzle', () => startGame('c4', true));
+  } else if (S.game === 'bs') {
+    btn(S.over ? 'New fleet' : 'Give up, new fleet', () => startGame('bs', true));
   } else {
     btn(S.over ? 'New run' : 'Restart', () => startGame('pong', true));
   }
