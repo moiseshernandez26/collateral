@@ -29,10 +29,13 @@ npm install
 npm run dev
 ```
 
-Opens at `http://localhost:5173`. With no WebMCP-capable browser or agent
-attached, it drops straight into single-player. With WebMCP available, it
-asks you to pick "play vs agent" or "play solo" before doing anything else —
-the API being present doesn't mean an agent is actually listening.
+Opens at `http://localhost:5173`. With no WebMCP-capable browser, it drops
+straight into single-player. With WebMCP available it registers its tools and
+goes into duel mode right away, so an agent attaching to the tab finds the tool
+list already there. The API being present still doesn't mean an agent is
+actually listening — the pill in the bar says `waiting for agent` until a call
+arrives — and the **mode dropdown** in the top bar switches to solo at any
+time, which takes every tool back off the page.
 
 ## Playing against an agent
 
@@ -44,7 +47,7 @@ You need:
   WebMCP.
 
 Without either of those, `document.modelContext` may still exist but nothing
-will call your tools — pick "play solo" at the prompt, or test the duel
+will call your tools — switch the mode dropdown to solo, or test the duel
 *interface* without a live agent via `http://localhost:5173/?duo=1`.
 
 Testing from another device on your LAN needs HTTPS, since Chrome only treats

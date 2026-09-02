@@ -34,12 +34,12 @@ src/                   →  the app, split by module (see CLAUDE.md architecture
   and a browser agent discovers and invokes them. `navigator.modelContext` was
   deprecated in Chrome 150.
 - **Duel mode** — the external agent is the opponent and plays turn by turn.
-  Reached when WebMCP is available *and* the human picks "play vs agent" at
-  the mode picker on load — availability alone doesn't imply an agent is
+  Entered automatically when WebMCP is available, since the tools have to be
+  registered before an agent lists them — availability alone doesn't imply an agent is
   attached.
 - **Solo mode** — a single player, no opponent, no two-player scoreboard.
-  Reached automatically with no WebMCP, or by choosing "play solo" at the
-  picker when WebMCP is available.
+  Reached automatically with no WebMCP, or by picking "Solo" from the mode
+  dropdown in the top bar, which unregisters every tool on the way.
 - **Deduction aids** — `ms_frontier`, `c4_analysis`, Pong's `intercept_y` and
   Hanoi's `hanoi_moves`, which hand the agent the constraints already worked
   out. This is the real work of the project.

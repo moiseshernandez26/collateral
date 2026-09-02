@@ -34,16 +34,15 @@ export const RULES: Record<string, string> = {
     <li>The clock starts on your first move. <b>31 moves is optimal.</b></li>
     <li>Your best time is kept.</li></ul>`,
   pong_duel: `Real-time, not turn-based. You are the <b>red</b> paddle on the right,
-    the agent is the <b>blue</b> one on the left. First to 5 points wins the round.
-    <b>The agent serves.</b> Nothing moves until it calls <code>pong_ready</code>,
+    the agent the <b>blue</b> one on the left, playing only through its tools.
+    First to 5 points. <b>The agent serves</b>, by calling <code>pong_ready</code> —
     which is also where it finds out which paddle is its own.
-    <ul><li>Move your paddle with the <b>↑</b> and <b>↓</b> arrow keys — hold <b>Shift</b>
-    for fine control. The mouse does nothing here, by design.</li>
-    <li>The agent plays only through its tools; it never touches the page.</li>
-    <li>The agent can't watch every frame, so <code>pong_read</code> waits until the
-    ball turns toward it and then hands it the exact interception point.</li>
-    <li><b>While the agent decides, the ball slows to a crawl</b> — that pause is
-    a round-trip to the agent, made visible.</li></ul>`,
+    <ul><li>Move with the <b>↑</b> / <b>↓</b> arrow keys, <b>Shift</b> for fine
+    control. The mouse does nothing here, by design.</li>
+    <li>It can't watch every frame, so <code>pong_read</code> waits until the ball
+    turns toward it, then hands it the interception point.</li>
+    <li><b>While it decides, the ball slows to a crawl</b> — that pause is a
+    round-trip, made visible.</li></ul>`,
   pong_solo: `Keep the ball alive. It bounces off the top, bottom, and left walls;
     you defend the right.
     <ul><li>Move your paddle with the <b>↑</b> and <b>↓</b> arrow keys — hold <b>Shift</b>

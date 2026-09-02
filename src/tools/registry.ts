@@ -4,12 +4,36 @@ import { MS_TOOLS } from '../minesweeper/tools';
 import { C4_TOOLS } from '../connect4/tools';
 import { PONG_TOOLS } from '../pong/tools';
 import { HANOI_TOOLS } from '../hanoi/tools';
+import { CORE } from './core';
 import { logTools } from '../log';
 import type { GameId, ToolDef } from '../types';
 
 const GAME_TOOLS: Record<GameId, ToolDef[]> = { ms: MS_TOOLS, c4: C4_TOOLS, pong: PONG_TOOLS, hanoi: HANOI_TOOLS };
 
 let gameCtrl: AbortController | null = null;
+// The core tools used to register without a signal, on the grounds that they
+// never leave. They do now: picking "Solo" from the mode dropdown takes every
+// tool off the page, so an attached agent isn't left holding switch_game for a
+// board the human is playing alone.
+let coreCtrl: AbortController | null = null;
+
+export async function registerCoreTools(): Promise<void> {
+  const mc = document.modelContext;
+  if (!mc) return;
+  coreCtrl?.abort();
+  coreCtrl = new AbortController();
+  for (const t of CORE) await mc.registerTool(toolDef(t), { signal: coreCtrl.signal });
+}
+
+/** Solo mode: hand everything back. `ontoolchange` fires on the way out, so
+ *  the inspector's list empties in front of the room — the same mechanism as a
+ *  game switch, pointed the other way. */
+export function unregisterAllTools(): void {
+  gameCtrl?.abort();
+  gameCtrl = null;
+  coreCtrl?.abort();
+  coreCtrl = null;
+}
 
 export async function registerGameTools(id: GameId): Promise<number> {
   if (!S.mcp || !document.modelContext) return 0;

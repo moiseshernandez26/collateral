@@ -76,3 +76,7 @@ export const legalMoves = (who: Player): { from: number; to: number }[] => {
 };
 
 export const fmt = (ms: number): string => (ms / 1000).toFixed(1) + 's';
+
+/** "1 move", "2 moves". Lives here because the tool text and the on-screen
+ *  clock both count moves, and they each got the plural wrong separately. */
+export const plural = (n: number): string => `${n} move${n === 1 ? '' : 's'}`;

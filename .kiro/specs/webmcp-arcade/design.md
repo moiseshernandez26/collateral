@@ -157,7 +157,10 @@ for (const t of GAME_TOOLS[id])
   await mc.registerTool(def(t), { signal: gameCtrl.signal });
 ```
 
-Core tools register without a `signal`: they never leave.
+Core tools register under a `signal` of their own (`coreCtrl`), separate from
+the per-game one. They never leave *during* a match; the one thing that takes
+them off the page is the human choosing Solo from the mode dropdown, and that
+has to take everything with it.
 
 `switch_game` and `new_round`'s `run` **must** be `async` and `await startGame(...)`
 before returning — this was a real bug: an un-awaited `run` resolves as soon as
@@ -167,16 +170,30 @@ can land while the previous switch's registration is still in flight, aborting i
 mid-loop with an `AbortError`. `execute()` in `tools/helpers.ts` awaits whatever
 `run` returns, so a synchronous `run` still works unchanged.
 
-### Mode picker
+### Mode selection
 
 `document.modelContext` existing only proves the browser *can* register
 tools — it says nothing about an agent actually being attached to call them
-(no agent app running, no MCP inspector connected). So on boot, if the API is
-present, the page shows a modal asking the human "play vs agent" or "play
-solo" instead of assuming duel mode. Choosing solo skips tool registration
-entirely and behaves exactly like the no-WebMCP path; choosing vs-agent runs
-the normal registration flow. When the API is absent, boot proceeds straight
-to solo mode as before — there's nothing to ask about.
+(no agent app running, no MCP inspector connected). That gap is real, and for
+several versions the page answered it with a modal on boot asking "play vs
+agent" or "play solo" before registering anything.
+
+That was the wrong place to ask. An agent attaching to the tab lists the
+page's tools straight away, and with registration behind a human click the
+list it got back was empty — so it concluded the page had no tools and fell
+back to screenshot-and-click, which is the exact failure the whole demo exists
+to argue against. **Detection now means duel mode, and the core tools go up
+before anything else.** When the API is absent, boot proceeds straight to solo
+mode as before.
+
+The human's answer to the same question moved to a `<select>` in the top bar
+(`#modeWrap`), available whenever WebMCP is. Switching to solo calls
+`unregisterAllTools()` — which is why the core tools now register under an
+`AbortController` of their own instead of without a signal — hides the call
+rail, and restarts the game with a fresh scoreboard, since rounds-won and a
+single solo number don't convert into each other. Switching back re-registers.
+Going out and back several times does not duplicate anything: each direction
+aborts the previous controller before making a new one.
 
 The same gap shows up again once the page is running, so the UI names it. The
 whole API surface is `registerTool` / `getTools` / `executeTool` / `ontoolchange`
@@ -460,6 +477,31 @@ minesweeper and Pong. Animations go through anime.js with a guard — if the CDN
 fails, the game works without them. Pong uses none: its motion *is* the game, so
 `prefers-reduced-motion` deliberately does not stop the ball. It only suppresses
 the decorative animations in the other two games.
+
+### Layout: an app shell, not a document
+
+`body` is `height:100dvh; overflow:hidden`, the board pane and the call rail
+each scroll on their own, and the page never scrolls at all above 660px wide.
+This is not tidiness. The rail gains a line per tool call, and in normal
+document flow it stretched the page past 3000px during a Pong rally — which
+pushed the *board* off the top of the screen while the agent was playing on it.
+Bounding the shell to the viewport makes the rail's growth the rail's problem.
+
+Within the rail the rules take their natural height and the log absorbs the
+slack, with a floor (`#logSec{min-height:118px}`) under the log and shrink
+allowed on the rules above it. The order matters: an empty-looking rail is the
+one thing this page must never show, so if something has to be cut short it is
+the rules, which the human can scroll.
+
+Board sizes are five tokens on `:root` — `--cell`, `--slot`, `--dw`, `--d0`,
+`--board` — rather than numbers spread through the rules, so a single
+breakpoint resizes all four games together. There are breakpoints on height as
+well as width, because the page is usually opened inside an agent's own browser
+window, which is both narrower and shorter than a desktop tab, and a board that
+only shrinks sideways still pushes its own buttons off the bottom. Below 660px
+the two columns stack, the page goes back to normal flow, and the call rail is
+ordered *above* the rules: if only one panel fits under the board, it has to be
+the agent's calls.
 
 ## Error handling
 

@@ -12,21 +12,6 @@
 </head>
 <body>
 
-<div id="picker" class="picker">
-  <div class="picker-card">
-    <h2>WebMCP detected</h2>
-    <p>
-      This browser can register tools for an agent to call, but that alone
-      doesn't mean one is connected — you might not have an agent app or an
-      MCP inspector attached right now. How do you want to play?
-    </p>
-    <div class="picker-choices">
-      <button id="pickAgent" class="agent">Play vs agent</button>
-      <button id="pickSolo" class="solo">Play solo</button>
-    </div>
-  </div>
-</div>
-
 <div id="pongReady" class="picker">
   <div class="picker-card">
     <h2>Pong · ready?</h2>
@@ -44,6 +29,13 @@
 <div class="bar">
   <h1>Duel</h1>
   <span id="pill" class="pill off">checking…</span>
+  <label class="mode" id="modeWrap" hidden>
+    <span>mode</span>
+    <select id="mode" aria-label="Play against the agent, or on your own">
+      <option value="duel">Agent vs you</option>
+      <option value="solo">Solo</option>
+    </select>
+  </label>
   <span class="spacer"></span>
   <div class="score" id="scoreBox"></div>
 </div>
@@ -71,7 +63,7 @@
   </section>
 
   <aside class="rail">
-    <section class="sec"><h2><span>Rules</span><span id="gameTag"></span></h2><div id="rules"></div></section>
+    <section class="sec" id="rulesSec"><h2><span>Rules</span><span id="gameTag"></span></h2><div id="rules"></div></section>
     <section class="sec" id="logSec">
       <h2><span>Agent calls</span><span id="evCount">0</span></h2>
       <div id="metricsLine" class="metrics">0 this round · 0 rejected · 0 bad</div>

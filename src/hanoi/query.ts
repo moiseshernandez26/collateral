@@ -1,8 +1,6 @@
 import { S, other } from '../state';
 import type { Player } from '../types';
-import { HANOI, OPTIMAL, peg, moves, legalMoves, elapsedFor, solved, startedAt, fmt } from './state';
-
-const plural = (n: number): string => `${n} move${n === 1 ? '' : 's'}`;
+import { HANOI, OPTIMAL, peg, moves, legalMoves, elapsedFor, solved, startedAt, fmt, plural } from './state';
 
 export interface Snapshot {
   your_pegs: number[][];

@@ -59,9 +59,20 @@ don't run into a dead page.
 6. WHERE the URL contains `?duo=1` THE SYSTEM SHALL force duel mode even without
    WebMCP, for interface testing.
 7. IF `document.modelContext` exists and `registerTool` is a function THEN THE
-   SYSTEM SHALL ask the human to choose duel mode or solo mode before
-   registering any game tools, since the API being present does not mean an
-   agent is actually attached to call it.
+   SYSTEM SHALL register the core tools and enter duel mode on load, without
+   asking the human first. (Superseded the mode-picker modal: the API being
+   present still does not mean an agent is attached, but gating registration on
+   a click meant an agent listing the page's tools on attach found none.)
+8. WHERE WebMCP is available THE SYSTEM SHALL offer a mode control in the top
+   bar for switching between duel and solo at any time.
+9. WHEN the human switches to solo mode THE SYSTEM SHALL unregister every
+   registered tool, and WHEN they switch back to duel THE SYSTEM SHALL
+   register them again.
+10. WHILE the human is choosing between the two modes THE SYSTEM MAY name the
+    agent in the mode control itself; criterion 4 governs the game interface.
+11. WHERE the viewport is at least 660 CSS pixels wide THE SYSTEM SHALL keep the
+    whole interface within the viewport, scrolling the board pane and the call
+    rail independently rather than the page.
 
 ## Requirement 4 — Turns
 

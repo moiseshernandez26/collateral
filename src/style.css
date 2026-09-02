@@ -8,22 +8,27 @@
   --mono:'DM Mono',ui-monospace,monospace;
   --n1:#2A3FB8;--n2:#1F6B40;--n3:#B33A1E;--n4:#5B2E8A;
   --n5:#8A4A16;--n6:#166069;--n7:#141613;--n8:#5F675C;
+  /* Every board size lives here rather than in the rules, because the page is
+     often opened inside an agent's own browser window — a narrow, short
+     viewport — and one breakpoint has to shrink all four games at once. */
+  --cell:38px;   /* minesweeper */
+  --slot:52px;   /* connect 4 */
+  --dw:15px;     /* hanoi: width one disc adds over the one above it */
+  --d0:18px;     /* hanoi: base disc width, before the per-disc step */
+  --board:580px; /* the widest a board may get */
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;-webkit-font-smoothing:antialiased}
+/* An app shell, not a document: the page itself never scrolls, the board pane
+   and the call rail each scroll on their own. The rail is why — it gains a line
+   per tool call, and a long Pong rally used to stretch the page past 3000px, so
+   the board scrolled off the top of the room's screen while the agent played. */
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;-webkit-font-smoothing:antialiased;
+  height:100dvh;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
 .picker{position:fixed;inset:0;background:rgba(20,22,19,.82);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .picker-card{background:var(--panel);border:3px solid var(--ink);padding:24px 26px;max-width:420px;text-align:center}
 .picker-card h2{margin:0 0 10px;font-family:var(--disp);font-size:22px;letter-spacing:.03em;text-transform:uppercase}
 .picker-card p{margin:0 0 18px;font-size:13.5px;line-height:1.55;color:var(--soft)}
-.picker-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.picker-choices button{font-family:var(--ui);font-size:14px;font-weight:700;padding:10px 16px;border:2.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
-.picker-choices button:hover{background:var(--ink);color:var(--panel)}
-.picker-choices button:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.picker-choices #pickAgent{border-color:var(--agent);color:var(--agent)}
-.picker-choices #pickAgent:hover{background:var(--agent);color:#fff}
-.picker-choices #pickSolo{border-color:var(--human);color:var(--human)}
-.picker-choices #pickSolo:hover{background:var(--human);color:#fff}
 .picker-card .tag.h{color:var(--human)} .picker-card .tag.a{color:var(--agent)}
 .ready-status{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);border:2px dashed var(--rule);padding:8px 10px;margin:0 0 16px}
 .ready-status.on{color:var(--agent);border-color:var(--agent);border-style:solid}
@@ -35,27 +40,31 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .pill.on{color:var(--agent)} .pill.off{color:var(--soft)}
 .pill.on.idle{color:var(--human)}
 .bar .spacer{flex:1}
+.mode{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)}
+.mode[hidden]{display:none}
+.mode select{font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:3px 5px;border:1.5px solid var(--rule);background:var(--panel);color:var(--ink);cursor:pointer}
+.mode select:focus-visible{outline:2px solid var(--agent);outline-offset:1px}
 .score{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em}
 .score b{font-family:var(--disp);font-size:26px;letter-spacing:.02em;line-height:1}
 .score .h b{color:var(--human)} .score .a b{color:var(--agent)}
 .score .sep{color:var(--rule)}
 
-.wrap{display:grid;grid-template-columns:minmax(0,1fr) 330px;min-height:calc(100vh - 51px)}
-.arena{min-width:0;padding:20px 18px 40px;display:flex;flex-direction:column;align-items:center;gap:14px;border-right:3px solid var(--ink)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,330px);flex:1;min-height:0}
+.arena{min-width:0;min-height:0;overflow-y:auto;padding:20px 18px 40px;display:flex;flex-direction:column;align-items:center;gap:14px;border-right:3px solid var(--ink)}
 
-.tabs{display:flex;border:3px solid var(--ink);width:min(100%,580px)}
+.tabs{display:flex;border:3px solid var(--ink);width:min(100%,var(--board))}
 .tabs button{flex:1;font-family:var(--disp);font-size:15px;letter-spacing:.05em;text-transform:uppercase;padding:9px 6px;border:0;border-right:3px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
 .tabs button:last-child{border-right:0}
 .tabs button.on{background:var(--ink);color:var(--panel)}
 .tabs button:focus-visible{outline:3px solid var(--agent);outline-offset:-3px}
 
-.turn{width:min(100%,580px);border:3px solid var(--ink);padding:9px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel)}
+.turn{width:min(100%,var(--board));border:3px solid var(--ink);padding:9px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--panel)}
 .turn .who{font-family:var(--disp);font-size:20px;letter-spacing:.02em;text-transform:uppercase}
 .turn.h{background:var(--human);color:#fff} .turn.a{background:var(--agent);color:#fff}
 .turn.over{background:var(--ink);color:var(--panel)}
 .turn .hint{font-family:var(--mono);font-size:11px;opacity:.92;text-align:right}
 
-.roundline{width:min(100%,580px);font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink);display:flex;justify-content:space-between;margin-top:-6px}
+.roundline{width:min(100%,var(--board));font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:-6px}
 .roundline b{color:var(--ink)}
 .roundline .tag{font-weight:700}
 .roundline .tag.h{color:var(--human)} .roundline .tag.a{color:var(--agent)}
@@ -69,17 +78,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 
 #msGrid{display:grid;gap:3px;background:var(--ink);padding:3px;border:3px solid var(--ink)}
 .ms{
-  position:relative;width:38px;height:38px;border:0;padding:0;cursor:pointer;background:var(--closed);
+  position:relative;width:var(--cell);height:var(--cell);border:0;padding:0;cursor:pointer;background:var(--closed);
   box-shadow:inset 2px 2px 0 rgba(255,255,255,.34), inset -2px -2px 0 rgba(0,0,0,.20);
-  font-family:var(--mono);font-size:17px;font-weight:500;color:var(--ink);
+  font-family:var(--mono);font-size:calc(var(--cell) * .45);font-weight:500;color:var(--ink);
   display:flex;align-items:center;justify-content:center;
 }
 .ms:hover:not(.open):not(.taken){background:var(--closed-hi)}
 .ms:focus-visible{outline:3px solid #fff;outline-offset:-3px;z-index:2}
 .ms.open{background:var(--open);box-shadow:none;cursor:default}
-.ms.taken{cursor:default;color:#fff;font-size:16px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.22)}
+.ms.taken{cursor:default;color:#fff;font-size:calc(var(--cell) * .42);box-shadow:inset 0 0 0 2px rgba(0,0,0,.22)}
 .ms.taken.byh{background:var(--human)} .ms.taken.bya{background:var(--agent)}
-.ms.flag{color:var(--human);font-size:18px}
+.ms.flag{color:var(--human);font-size:calc(var(--cell) * .47)}
 .ms.boom{background:var(--ink);color:#fff}
 .ms.shown{background:var(--closed);color:var(--ink);opacity:.72}
 .board-claim .ms:not(.open):not(.taken){cursor:crosshair;box-shadow:inset 0 0 0 2px var(--human), inset 2px 2px 0 rgba(255,255,255,.2)}
@@ -87,30 +96,29 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-s
 .n5{color:var(--n5)}.n6{color:var(--n6)}.n7{color:var(--n7)}.n8{color:var(--n8)}
 
 #c4Grid{display:grid;gap:6px;background:var(--agent);padding:7px;border:3px solid var(--ink)}
-.c4{width:52px;height:52px;border-radius:50%;background:var(--panel);border:0;padding:0;cursor:pointer;box-shadow:inset 0 3px 6px rgba(0,0,0,.28)}
+.c4{width:var(--slot);height:var(--slot);border-radius:50%;background:var(--panel);border:0;padding:0;cursor:pointer;box-shadow:inset 0 3px 6px rgba(0,0,0,.28)}
 .c4.dead{cursor:default}
 .c4:hover:not(.dead){background:#fff}
 .c4:focus-visible{outline:3px solid #fff;outline-offset:-3px}
 .c4.h{background:var(--human);box-shadow:inset 0 -3px 0 rgba(0,0,0,.22)}
 .c4.a{background:var(--ink);box-shadow:inset 0 -3px 0 rgba(0,0,0,.3)}
 .c4.win{outline:4px solid #F2D64B;outline-offset:-4px}
-@media (max-width:1060px){ .c4{width:42px;height:42px} .ms{width:33px;height:33px;font-size:15px} }
 
 /* Hanoi: two towers side by side, one clock under them. */
 #hanoiBoards{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
 .hanoi-side h3{margin:0 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);font-weight:700}
 .hanoi-board{display:flex;gap:10px;background:var(--open);border:3px solid var(--ink);padding:12px 12px 0}
 .peg{
-  position:relative;width:118px;height:150px;border:0;padding:0;background:transparent;cursor:pointer;
+  position:relative;width:calc(var(--d0) + var(--dw) * 5 + 25px);height:calc(var(--dw) * 8 + 30px);border:0;padding:0;background:transparent;cursor:pointer;
   display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
 }
 div.peg{cursor:default}
 /* the post, drawn behind the discs */
-.peg::before{content:'';position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:8px;height:112px;background:var(--rule)}
+.peg::before{content:'';position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:8px;height:calc(100% - 38px);background:var(--rule)}
 .peg .discs{position:relative;display:flex;flex-direction:column-reverse;align-items:center;gap:2px;padding-bottom:2px}
 .peg .base{width:100%;height:7px;background:var(--ink)}
 .peg .pegno{font-family:var(--mono);font-size:10px;color:var(--soft);padding:3px 0 6px}
-.disc{position:relative;display:block;height:19px;border:2px solid var(--ink);border-radius:3px;background:var(--human);
+.disc{position:relative;display:block;height:calc(var(--dw) + 4px);border:2px solid var(--ink);border-radius:3px;background:var(--human);
   display:flex;align-items:center;justify-content:center}
 .disc b{font-family:var(--mono);font-size:10px;color:#fff;font-weight:700}
 .d1{background:#C24A2C}.d2{background:#D98324}.d3{background:#7C8878}.d4{background:#3F35B8}.d5{background:#141613}
@@ -121,19 +129,23 @@ div.peg{cursor:default}
 .peg.target::after{content:'';position:absolute;inset:0;border:3px dashed var(--human);pointer-events:none}
 .peg.done::after{content:'';position:absolute;inset:0;border:3px solid #2E7D32;pointer-events:none}
 .hanoi-clock{flex-basis:100%;font-family:var(--mono);font-size:13px;color:var(--ink);border-top:2px solid var(--ink);padding-top:8px}
-@media (max-width:1060px){ .peg{width:92px;height:132px} #hanoiBoards{gap:18px} }
+#hanoiBoards{max-width:100%}
 
-#pongCanvas{width:min(100%,580px);aspect-ratio:480/300;height:auto;border:3px solid var(--ink);background:var(--panel);touch-action:none;display:block}
+#pongCanvas{width:min(100%,var(--board));aspect-ratio:480/300;height:auto;border:3px solid var(--ink);background:var(--panel);touch-action:none;display:block}
 #pongCanvas:focus-visible{outline:3px solid var(--agent);outline-offset:3px}
 
-.rail{background:var(--panel);display:flex;flex-direction:column;min-width:0;min-height:0}
+.rail{background:var(--panel);display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
 .sec > h2{margin:0;padding:10px 15px 8px;border-bottom:2px solid var(--ink);font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);font-weight:700;display:flex;justify-content:space-between}
+/* Natural height for the rules, all the slack to the log, and the rules are
+   the first to give ground if the rail runs out — the log has a floor because
+   an empty-looking rail is the one thing this page must never show. */
+#rulesSec{flex:0 1 auto;overflow-y:auto}
 #rules{padding:12px 15px 14px;font-size:14px;line-height:1.6;border-bottom:2px solid var(--ink)}
 #rules ul{margin:6px 0 0;padding-left:17px} #rules li{margin-bottom:4px}
 #rules li::marker{color:var(--human);font-weight:700}
-#logSec{flex:1;min-height:0;display:flex;flex-direction:column}
+#logSec{flex:1 1 0;min-height:118px;display:flex;flex-direction:column}
 .metrics{padding:0 15px 8px;font-family:var(--mono);font-size:10.5px;color:var(--soft);border-bottom:2px solid var(--ink)}
-#log{flex:1;overflow-y:auto}
+#log{flex:1;min-height:0;overflow-y:auto}
 .ev{padding:7px 15px;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:11px;line-height:1.5}
 .ev .n{color:var(--agent);font-weight:500}
 .ev.sys{background:#E4E7E0;border-left:3px solid var(--rule)}
@@ -146,9 +158,42 @@ div.peg{cursor:default}
 .blank{padding:15px;font-family:var(--mono);font-size:11px;color:var(--soft);line-height:1.7}
 .blank code{background:#DDE1DA;padding:1px 4px}
 
-@media (max-width:900px){
+/* The ladder. This page is usually opened inside an agent's own browser
+   window, which is narrower and shorter than a desktop tab, so every step
+   gives back vertical room as well as horizontal — and the last thing to be
+   given up is the two-column layout, because stacking is what pushes the call
+   rail (the third demo moment) below the fold. Shrinking the boards buys
+   enough room to hold the columns down to ~660px. */
+@media (max-width:1060px){
+  :root{--cell:33px;--slot:42px;--dw:11px;--d0:14px}
+  #hanoiBoards{gap:18px}
+  .arena{padding:16px 14px 24px;gap:12px}
+}
+@media (max-width:860px){
+  :root{--cell:29px;--slot:37px;--dw:9px;--d0:12px}
+  .bar{padding:7px 12px;gap:9px}
+  .bar h1{font-size:20px}
+  .score b{font-size:21px}
+  .tabs button{font-size:12.5px;letter-spacing:.02em;padding:8px 3px}
+  .turn{padding:7px 11px} .turn .who{font-size:17px} .turn .hint{font-size:10px}
+  .arena{padding:13px 10px 20px;gap:10px}
+  #hanoiBoards{gap:13px}
+  #rules{font-size:13px;padding:10px 13px 12px}
+}
+@media (max-width:660px){
+  /* Too short to split the height two ways: hand the page back to normal flow
+     and cap the rail instead, or the board gets a few centimetres to live in. */
+  body{height:auto;overflow:visible}
+  .arena{overflow:visible}
+  .rail{overflow:visible}
   .wrap{grid-template-columns:1fr}
   .arena{border-right:0;border-bottom:3px solid var(--ink)}
-  #log{max-height:280px}
+  /* Stacked at last. The rail goes above the rules here: if only one panel is
+     going to be on screen under the board, it has to be the agent's calls. */
+  #logSec{order:-1}
+  #rulesSec{max-height:none}
+  #log{max-height:240px}
 }
+@media (max-height:700px){ :root{--cell:32px;--slot:40px;--dw:10px;--d0:13px;--board:520px} .arena{padding:14px 14px 16px;gap:10px} }
+@media (max-height:580px){ :root{--cell:27px;--slot:34px;--dw:8px;--d0:11px;--board:460px} .arena{gap:8px} .tabs button{padding:6px 4px} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

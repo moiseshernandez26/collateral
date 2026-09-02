@@ -237,3 +237,43 @@ Ideas that fit later without redesigning anything:
     rate lets the ball tunnel through a paddle.
 
 - [x] A fourth minigame — Battleship (v21), replaced by the Towers of Hanoi race (v22)
+
+- [x] Remove the boot mode picker; register on load, switch modes from the bar
+
+  The modal asked the right question at the wrong moment. It registered
+  nothing until a human clicked, and an agent attaching to the tab lists the
+  page's tools straight away — so it got an empty list and fell back to
+  screenshot-and-click, the exact failure this demo exists to argue against.
+  WebMCP detected now means duel mode with the core tools registered first;
+  `#modeWrap` in the bar is the human's way to solo, and taking it calls
+  `unregisterAllTools()` so nothing is left registered for a board the human
+  is playing alone. That reverses R3.7 and design.md's section, both updated.
+  Verified live: 8 tools on load with no interaction, 0 in solo, 8 again on
+  return, no duplicates after three round trips.
+
+- [x] Responsive pass for an agent-sized viewport
+
+  The page is opened inside the agent's own browser window, which is narrower
+  *and* shorter than a desktop tab. The real find was that nothing bounded the
+  call rail: it gains a line per tool call, and a flooded rail measured 3907px
+  tall, scrolling the board off the top of the screen mid-game. Now an app
+  shell — `body{height:100dvh;overflow:hidden}`, board pane and rail scrolling
+  independently. Board sizes moved to five `:root` tokens so one breakpoint
+  resizes all four games; breakpoints on height as well as width; the two
+  columns hold down to 660px instead of 900px, since stacking is what buries
+  the rail. Swept 1440x900 down to 360x620 across all four games: no
+  horizontal overflow, nothing clipped except Pong's rules at 560px tall,
+  which scroll. Pong's rules block was also trimmed — it was long enough to
+  squeeze the log to its floor on a 624px-tall window.
+
+- [x] Re-verify Hanoi's tools (second pass)
+
+  Schemas, all eight rejection paths with the tower left untouched, a full
+  31-move solve through the tools with zero rejections, the post-race refusal,
+  and tool rotation on `switch_game`. Two notes on the current Chrome, neither
+  an app bug: `executeTool` wants its arguments as a JSON string and
+  `getTools()` returns `inputSchema` serialized; and a subframe shares the
+  top-level tool registry, so an iframe of the page doubled the tool list with
+  duplicate names accepted. Fixed the last of the "1 moves" plurals — v23
+  caught it in the tool text, but the on-screen clock and the round line each
+  counted moves on their own; there is now one `plural()` they all call.

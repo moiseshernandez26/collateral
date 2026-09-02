@@ -6,7 +6,7 @@ import { S } from './state';
 import { MS, taken, flags, claimMode, flagMode } from './minesweeper/state';
 import { msg as c4Msg } from './connect4/state';
 import { PONG, rallies, thinking, awaitingStart } from './pong/state';
-import { OPTIMAL, moves as hanoiMoves, startedAt as hanoiStarted, elapsedFor, fmt } from './hanoi/state';
+import { OPTIMAL, moves as hanoiMoves, startedAt as hanoiStarted, fmt, plural } from './hanoi/state';
 
 export function paintHud(): void {
   paintTurn();
@@ -107,8 +107,11 @@ function paintRoundLine(): void {
       L.innerHTML = `<b class="tag h">you ${hanoiMoves.human}</b> · <b class="tag a">agent ${hanoiMoves.agent}</b>`;
       R.innerHTML = `moves · <b>${OPTIMAL}</b> is optimal`;
     } else {
-      L.innerHTML = `<b>${hanoiMoves.human}</b> moves · <b>${fmt(elapsedFor('human'))}</b>`;
-      R.innerHTML = S.solo.hanoiBest ? `best <b>${fmt(S.solo.hanoiBest)}</b>` : `<b>${OPTIMAL}</b> moves is optimal`;
+      // No clock here on purpose: the one under the board is the live one, and
+      // this line is only repainted on a move, so it sat there showing a time
+      // that had stopped a second ago while the real one ticked past it.
+      L.innerHTML = `<b>${plural(hanoiMoves.human)}</b> · <b>${OPTIMAL}</b> is optimal`;
+      R.innerHTML = S.solo.hanoiBest ? `best <b>${fmt(S.solo.hanoiBest)}</b>` : 'move the tower onto peg 2';
     }
   } else if (S.duel) {
     L.innerHTML = `<b class="tag h">you ${S.round.human}</b> · <b class="tag a">agent ${S.round.agent}</b>`;

@@ -1,6 +1,6 @@
 import { S } from '../state';
 import { paint } from '../controller';
-import { HANOI, peg, moves, picked, setPicked, canMove, elapsedFor, startedAt, fmt } from './state';
+import { HANOI, peg, moves, picked, setPicked, canMove, elapsedFor, startedAt, fmt, plural } from './state';
 import { move, beginRace } from './actions';
 
 const boards = document.getElementById('hanoiBoards')!;
@@ -83,7 +83,7 @@ function startTicker(): void {
 }
 
 function paintClock(): void {
-  const parts = [`<b>${fmt(elapsedFor('human'))}</b>`, `you <b>${moves.human}</b> moves`];
+  const parts = [`<b>${fmt(elapsedFor('human'))}</b>`, `you <b>${plural(moves.human)}</b>`];
   if (S.duel) parts.push(`agent <b>${moves.agent}</b>`);
   clock.innerHTML = startedAt === null ? 'clock not started' : parts.join(' · ');
 }
@@ -104,7 +104,10 @@ function paintSide(board: HTMLElement, who: 'human' | 'agent'): void {
     el.classList.toggle('done', p === HANOI.pegs - 1 && stack.length === HANOI.discs);
     const discs = el.querySelector('.discs')!;
     discs.innerHTML = stack
-      .map((d) => `<i class="disc d${d}" style="width:${18 + d * 15}px"><b>${d}</b></i>`)
+      // Width comes from the CSS tokens, not from arithmetic here: --dw/--d0
+      // shrink at the narrow breakpoints so the two towers still fit side by
+      // side inside an agent's browser window.
+      .map((d) => `<i class="disc d${d}" style="width:calc(var(--d0) + var(--dw) * ${d})"><b>${d}</b></i>`)
       .reverse()
       .join('');
   }

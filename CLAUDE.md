@@ -71,10 +71,17 @@ The entire design exists so these three moments work. Don't break them.
 - **No WebMCP, single player.** Not a local bot opponent, not playing both sides:
   a real single-player mode, and the interface doesn't mention an opponent
   anywhere.
-- **WebMCP being available doesn't mean an agent is attached.** The API
-  existing only proves the browser can register tools, not that anything is
-  listening. Ask the human ("play vs agent" or "play solo") before assuming
-  duel mode — don't go back to auto-entering duel mode on detection alone.
+- **Register on load; never gate registration on a human click.** WebMCP
+  detected means duel mode, immediately, with the tools up before anything
+  else. This used to be a modal asking "vs agent or solo?", on the correct
+  reasoning that the API has no "a consumer is attached" signal — but the tools
+  didn't go up until someone clicked, so an agent that listed them the moment it
+  attached saw an empty page and fell back to screenshot-and-click. The honest
+  answer to "is anyone actually there?" is given *after* registering, not
+  before it: the pill reads `N tools · waiting for agent` until a call arrives,
+  and the empty rail says so in words. The human's way out is the **mode
+  dropdown in the top bar**, which unregisters every tool on the way to solo.
+  Don't put the modal back.
 
 ## How tools are designed here
 
@@ -123,11 +130,24 @@ Three rules earned the hard way:
 
 `src/main.ts` is the only entry point: it imports `style.css` and checks
 whether WebMCP is available (`document.modelContext`). If it isn't, it goes
-straight to solo mode. If it is, availability alone doesn't mean an agent is
-attached to call the tools (no agent app running, no MCP inspector
-connected), so it shows a modal (`#picker` in `index.html`) asking the human
-to pick duel or solo before registering anything. Either path ends by calling
-`startGame('ms', false)` from `controller.ts`.
+straight to solo mode. If it is, it registers the core tools and enters duel
+mode on the spot — see the hard constraint above for why that isn't gated on a
+human click. `#modeWrap` in the bar is then the human's way between the two:
+`goSolo()` calls `unregisterAllTools()` and hides the rail, `goDuel()` puts the
+tools back. Either path ends by calling `startGame('ms', false)` from
+`controller.ts`.
+
+**The layout is an app shell, not a document** (`body{height:100dvh;
+overflow:hidden}`): the board pane and the call rail each scroll on their own
+and the page itself never does. That is load-bearing rather than tasteful. The
+rail gains a line per tool call, and with the page in normal flow a long Pong
+rally stretched it past 3000px — which scrolled the *board* off the top of the
+screen while the agent was playing on it. Under 660px wide there is no height
+to split two ways, so it hands the page back to normal flow and caps the log
+instead. Board sizes come from the `--cell` / `--slot` / `--dw` / `--d0` /
+`--board` tokens on `:root` so one breakpoint resizes all four games at once;
+the page is usually opened inside an agent's own browser window, which is
+narrower and shorter than a desktop tab.
 
 `state.ts` holds the single shared state (`S`): active game, whether it's a
 duel, turn, scoreboard. Any module imports it and mutates it directly.
