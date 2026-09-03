@@ -59,6 +59,8 @@ The entire design exists so these three moments work. Don't break them.
   per game. A file approaching the limit gets split again, not stretched.
 - **anime.js still loads from a CDN, guarded** (`if (window.anime)`), pulled in
   from `index.html`, never as an npm dependency or a hard requirement.
+- **The project itself is MIT** (`LICENSE` at the repo root, `license` field in
+  `package.json`). Dependencies are a separate question:
 - **Permissive licences only, and the rule is different for what ships and what
   builds.** *Shipped* (anything the browser loads): anime.js 3.2.1, MIT; and
   three Google fonts — Anton, Chivo, DM Mono — under the **SIL Open Font
