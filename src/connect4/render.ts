@@ -3,8 +3,10 @@ import { paint } from '../controller';
 import { refuseHandPlay } from '../log';
 import { C4, cells, winLine } from './state';
 import { drop, soloTry } from './actions';
+import { land } from '../anim';
 
 const c4Grid = document.getElementById('c4Grid')!;
+
 
 export function buildGrid(): void {
   c4Grid.innerHTML = '';
@@ -37,10 +39,15 @@ export function paintBoard(dropAt?: [number, number]): void {
     const v = cells[y][x];
     if (v) b.classList.add(v === 'human' ? 'h' : 'a', 'dead');
     if (winLine.some(([wy, wx]) => wy === y && wx === x)) b.classList.add('win');
+    // Clear whatever a drop animation left behind — see the note below.
+    b.style.transform = '';
   }
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (dropAt && window.anime && !reduceMotion) {
     const el = c4Grid.querySelector(`[data-p="${dropAt[0]},${dropAt[1]}"]`);
-    if (el) window.anime({ targets: el, translateY: [-58 * (dropAt[0] + 1), 0], duration: 400, easing: 'easeOutBounce' });
+    if (el) {
+      window.anime({ targets: el, translateY: [-58 * (dropAt[0] + 1), 0], duration: 400, easing: 'easeOutBounce' });
+      land(el as HTMLElement, 400);
+    }
   }
 }

@@ -13,6 +13,9 @@ function paintMode(pillText?: string): void {
   pill.className = S.duel ? 'pill on' : 'pill off';
   if (pillText) pill.textContent = pillText;
   el('logSec').style.display = S.duel ? '' : 'none';
+  // Solo hides the call rail, which left the rules sitting in the top third of
+  // an otherwise empty panel. Let them have the whole column instead.
+  document.querySelector('.rail')!.classList.toggle('solo', !S.duel);
   (el('mode') as HTMLSelectElement).value = S.duel ? 'duel' : 'solo';
 }
 

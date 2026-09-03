@@ -145,7 +145,11 @@ button.peg:hover:not(:disabled) .base{background:var(--human)}
 /* Natural height for the rules, all the slack to the log, and the rules are
    the first to give ground if the rail runs out — the log has a floor because
    an empty-looking rail is the one thing this page must never show. */
-#rulesSec{flex:0 1 auto;overflow-y:auto}
+#rulesSec{flex:0 1 auto;overflow-y:auto;background:var(--panel)}
+/* Solo hides the call rail, and a full-height panel with a rules card in the
+   top third read as something that had failed to load. Drop the column's
+   background instead, so the card ends where its text ends. */
+.rail.solo{background:transparent}
 #rules{padding:12px 15px 14px;font-size:14px;line-height:1.6;border-bottom:2px solid var(--ink)}
 #rules ul{margin:6px 0 0;padding-left:17px} #rules li{margin-bottom:4px}
 #rules li::marker{color:var(--human);font-weight:700}

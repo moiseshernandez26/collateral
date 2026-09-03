@@ -3,6 +3,7 @@ import { paint } from '../controller';
 import { refuseHandPlay } from '../log';
 import { MS, mines, opened, taken, flags, lost, claimMode, flagMode, count, setClaimMode } from './state';
 import { reveal, claim, soloReveal, soloFlag } from './actions';
+import { land } from '../anim';
 
 const msGrid = document.getElementById('msGrid')!;
 
@@ -53,6 +54,7 @@ export function paintBoard(pulse?: string[]): void {
     const [x, y] = k.split(',').map(Number);
     b.className = 'ms';
     b.textContent = '';
+    b.style.transform = ''; // clear a pulse that never got to run — see below
     if (S.duel && taken.has(k)) {
       const t = taken.get(k)!;
       b.classList.add('taken', t.by === 'human' ? 'byh' : 'bya');
@@ -87,5 +89,6 @@ export function paintBoard(pulse?: string[]): void {
   if (pulse && pulse.length && window.anime && !reduceMotion) {
     const els = pulse.map((k) => msGrid.querySelector(`[data-k="${k}"]`)).filter(Boolean);
     window.anime({ targets: els, scale: [0.6, 1], duration: 320, delay: window.anime.stagger(13), easing: 'easeOutBack' });
+    els.forEach((e) => land(e as HTMLElement, 320 + 13 * els.length));
   }
 }
