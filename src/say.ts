@@ -1,4 +1,5 @@
 import { S } from './state';
+import { metrics } from './metrics';
 import type { GameId } from './types';
 
 /**
@@ -33,11 +34,26 @@ const TIP: Record<GameId, string> = {
 const TABS: Record<GameId, string> = { ms: 'tabMs', c4: 'tabC4', pong: 'tabPong', hanoi: 'tabHanoi' };
 
 let shown = ''; // game+mode last painted, so a repaint mid-copy doesn't reset the button
+let manual: boolean | null = null; // set once the human opens or closes it by hand
+
+/**
+ * Open while the rail is empty, folded once calls start arriving.
+ *
+ * The block earns its space exactly when nobody is playing — that is the moment
+ * it exists for. Once the agent is calling tools, the rail is the thing worth
+ * looking at and this would be taking three entries' worth of room off the top
+ * of it. Clicking the header overrides either way, for the rest of the session.
+ */
+function open(): boolean {
+  return manual ?? metrics.calls === 0;
+}
 
 export function paintSay(): void {
-  const key = S.game + (S.duel ? '+duel' : '+solo');
+  const key = S.game + (S.duel ? '+duel' : '+solo') + (open() ? '+open' : '+shut');
   if (key === shown) return;
   shown = key;
+  document.querySelector('.say')?.classList.toggle('shut', !open());
+  document.getElementById('sayHead')?.setAttribute('aria-expanded', String(open()));
 
   // Solo mode must not mention an opponent anywhere (requirements R3.4), so the
   // tooltips come off entirely rather than being reworded.
@@ -67,6 +83,12 @@ const HOTKEY = /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAge
 export function wireSay(): void {
   const btn = document.getElementById('sayCopy');
   const text = document.getElementById('sayText');
+  const head = document.getElementById('sayHead');
+  head?.addEventListener('click', () => {
+    manual = !open();
+    shown = ''; // force the next paint through
+    paintSay();
+  });
   // Clicking the phrase selects it. Costs nothing, and it is the escape hatch
   // when the clipboard is unavailable.
   text?.addEventListener('click', selectSay);

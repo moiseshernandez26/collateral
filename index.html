@@ -70,7 +70,10 @@
       <h2><span>Agent calls</span><span id="evCount">0</span></h2>
       <div id="metricsLine" class="metrics">0 this round · 0 rejected · 0 bad</div>
       <div class="say">
-        <div class="say-h"><span>Say this to your agent</span><button id="sayCopy" type="button">copy</button></div>
+        <div class="say-h">
+          <button id="sayHead" class="say-toggle" type="button" aria-expanded="true" aria-controls="sayText">Say this to your agent</button>
+          <button id="sayCopy" type="button">copy</button>
+        </div>
         <p id="sayText"></p>
       </div>
       <div id="log"><p class="blank"><b>No calls yet.</b> The tools are registered and waiting. If nothing shows up here, the agent is not calling them — check that your agent is attached to <b>this tab</b>, and that it picked up the tool list after the page loaded.</p></div>
