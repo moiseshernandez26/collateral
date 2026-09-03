@@ -101,12 +101,17 @@ function paintSide(board: HTMLElement, who: 'human' | 'agent'): void {
     el.classList.toggle('target', who === 'human' && picked !== null && picked !== p && canMove('human', picked, p));
     el.classList.toggle('done', p === HANOI.pegs - 1 && stack.length === HANOI.discs);
     const discs = el.querySelector('.discs')!;
+    // `stack` runs bottom to top and `.discs` is `flex-direction:column-reverse`,
+    // which also lays out bottom to top — so the array order is already the
+    // right one. There used to be a `.reverse()` here, and it flipped every
+    // tower: the widest disc rendered at the top, resting on the narrowest.
+    // The text the agent gets from boardText() was right the whole time, so the
+    // screen and the tools disagreed about which way up the puzzle was.
     discs.innerHTML = stack
       // Width comes from the CSS tokens, not from arithmetic here: --dw/--d0
       // shrink at the narrow breakpoints so the two towers still fit side by
       // side inside an agent's browser window.
       .map((d) => `<i class="disc d${d}" style="width:calc(var(--d0) + var(--dw) * ${d})"><b>${d}</b></i>`)
-      .reverse()
       .join('');
   }
 }
