@@ -6,6 +6,7 @@ import { resetRoundMetrics, resetMatchMetrics } from './metrics';
 import { paintMetrics, clearLog, setToolCount } from './log';
 import { paintActs } from './acts';
 import { paintHud } from './hud';
+import { paintSay } from './say';
 import { newBoard as msNewBoard } from './minesweeper/state';
 import { buildGrid as buildMsGrid, paintBoard as paintMsBoard } from './minesweeper/render';
 import { blank as c4Blank } from './connect4/state';
@@ -53,6 +54,7 @@ export function paint(extra?: PaintExtra): void {
 
   paintHud();
   paintActs();
+  paintSay();
 }
 
 export async function startGame(id: GameId, keep: boolean): Promise<void> {

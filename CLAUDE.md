@@ -170,6 +170,14 @@ covering something the other games don't have: `agent.ts` (the blocking read and
 its single waiter), `ready.ts` (the "ready?" gate before the first serve), and
 `clock.ts` (the worker heartbeat that keeps a hidden tab running).
 
+`say.ts` holds the phrases to type at your agent — one per game, shown in the
+rail with a copy button, plus the short version as a tooltip on each game tab.
+It exists because the page registering tools does nothing on its own: if the
+human doesn't know what to ask for, the rail stays empty, and an empty rail is
+indistinguishable from a broken page. The tooltips are set from JS as
+`data-tip` and are removed entirely in solo mode, since solo must not mention an
+opponent anywhere. Nothing in this module runs before or during registration.
+
 `hud.ts` holds the turn box and the round line, split out of `controller.ts` when
 a fourth game pushed it past the line limit. Controller keeps `paint()` and
 `startGame()`; `hud.ts` and `acts.ts` keep the text and the buttons.

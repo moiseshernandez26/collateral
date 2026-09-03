@@ -277,3 +277,17 @@ Ideas that fit later without redesigning anything:
   duplicate names accepted. Fixed the last of the "1 moves" plurals — v23
   caught it in the tool text, but the on-screen clock and the round line each
   counted moves on their own; there is now one `plural()` they all call.
+
+- [x] Tell the human what to say to their agent
+
+  The page registering tools does nothing on its own, and a human who doesn't
+  know what to ask for produces an empty rail — which looks exactly like a
+  broken page. `src/say.ts` adds a "Say this to your agent" block in the rail
+  with the phrase for the active game and a copy button, plus a short version as
+  a hover tooltip on each game tab. The phrases restate the tool descriptions'
+  own advice in the human's direction. Painted from `paint()`, so nothing in it
+  runs before or during registration; tooltips are removed entirely in solo mode
+  (R3.4) and gated on `(hover:hover) and (min-width:661px)`, because `.arena`
+  scrolls and a tooltip wider than it would clip or add a scrollbar. Verified
+  that WebMCP detection, the 8-tool registration on load and the per-game tool
+  rotation are all unchanged.

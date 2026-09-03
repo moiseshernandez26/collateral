@@ -3,6 +3,7 @@ import { S, FORCE_DUO } from './state';
 import { startGame } from './controller';
 import { setToolCount } from './log';
 import { registerCoreTools, unregisterAllTools, watchToolChanges } from './tools/registry';
+import { wireSay } from './say';
 
 const el = (id: string): HTMLElement => document.getElementById(id)!;
 
@@ -57,6 +58,7 @@ async function onModeChange(): Promise<void> {
 }
 
 async function boot(): Promise<void> {
+  wireSay();
   const mc = document.modelContext;
   const capable = !!mc && typeof mc.registerTool === 'function';
 

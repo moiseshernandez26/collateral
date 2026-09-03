@@ -478,6 +478,36 @@ fails, the game works without them. Pong uses none: its motion *is* the game, so
 `prefers-reduced-motion` deliberately does not stop the ball. It only suppresses
 the decorative animations in the other two games.
 
+### Telling the human what to say
+
+Registering tools is only half of a demo. The other half is a human who knows
+what to ask for — and when they don't, nothing happens, which from the back of
+the room looks exactly like the page being broken. That is the same ambiguity
+the pill and the empty rail already work to remove, approached from the other
+side.
+
+So the rail carries a `Say this to your agent` block: the phrase for the active
+game, in full, with a copy button, and each game tab carries the short version
+as a hover tooltip. The phrases are the tool descriptions' own advice pointed at
+the human — stay in the loop for Pong, don't stop to report for Hanoi, don't
+click for the turn-based two.
+
+Three constraints on it, all of which have bitten something before:
+
+- **Nothing here may run before or during registration.** It is painted from
+  `paint()`, long after `boot()` has put the tools up.
+- **The tooltips come off in solo mode**, rather than being reworded, because
+  solo must not mention an opponent anywhere (R3.4).
+- **Tooltips only exist where they can be drawn.** `.arena` scrolls, so a
+  tooltip wider than it would be clipped or add a horizontal scrollbar; they are
+  gated on `(hover:hover) and (min-width:661px)`, and `pointer-events:none` is
+  unconditional so one can never swallow the click on its own tab.
+
+The copy button degrades rather than fails: the Clipboard API needs a secure
+context, permission *and* a real user gesture, and a demo served over plain HTTP
+on a LAN IP has none of them. On failure it selects the phrase and the button
+says which key to press.
+
 ### Layout: an app shell, not a document
 
 `body` is `height:100dvh; overflow:hidden`, the board pane and the call rail
